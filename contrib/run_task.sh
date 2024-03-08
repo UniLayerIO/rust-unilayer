@@ -106,7 +106,7 @@ do_feature_matrix() {
     # All crates have a "std" feature.
     loop_features "std" "$FEATURES_WITH_STD"
 
-    # All but `bitcoin` crate have an "alloc" feature, this tests it
+    # All but `unilayer` crate have an "alloc" feature, this tests it
     # along with any other features that should work with "std".
     if [ -n "$FEATURES_WITHOUT_STD" ]
        then
@@ -163,7 +163,7 @@ do_lint() {
 }
 
 # We should not have any duplicate dependencies. This catches mistakes made upgrading dependencies
-# in one crate and not in another (e.g. upgrade bitcoin_hashes in bitcoin but not in secp).
+# in one crate and not in another (e.g. upgrade unilayer_hashes in unilayer but not in secp).
 do_dup_deps() {
     duplicate_dependencies=$(
         # Only show the actual duplicated deps, not their reverse tree, then

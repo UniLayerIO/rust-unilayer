@@ -1,19 +1,19 @@
-# .gitignore for rust-bitcoin repository workspace.
+# .gitignore for rust-unilayer repository workspace.
 
 # Lock files
 Cargo.lock
 internals/Cargo.lock
-bitcoin/Cargo.lock
+unilayer/Cargo.lock
 hashes/Cargo.lock
 
 # Build artifacts
 target
 internals/target
-bitcoin/target
+unilayer/target
 hashes/target
 
 # Test artifacts
-bitcoin/dep_test
+unilayer/dep_test
 
 # Fuzz artifacts
 hfuzz_target

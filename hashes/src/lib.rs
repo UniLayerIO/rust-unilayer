@@ -3,7 +3,7 @@
 //! Rust hashes library.
 //!
 //! This is a simple, no-dependency library which implements the hash functions
-//! needed by Bitcoin. These are SHA256, SHA256d, and RIPEMD160. As an ancillary
+//! needed by UniLayer. These are SHA256, SHA256d, and RIPEMD160. As an ancillary
 //! thing, it exposes hexadecimal serialization and deserialization, since these
 //! are needed to display hashes anway.
 //!
@@ -12,8 +12,8 @@
 //! Hashing a single byte slice or a string:
 //!
 //! ```rust
-//! use bitcoin_hashes::sha256;
-//! use bitcoin_hashes::Hash;
+//! use unilayer_hashes::sha256;
+//! use unilayer_hashes::Hash;
 //!
 //! let bytes = [0u8; 5];
 //! let hash_of_bytes = sha256::Hash::hash(&bytes);
@@ -24,8 +24,8 @@
 //! Hashing content from a reader:
 //!
 //! ```rust
-//! use bitcoin_hashes::sha256;
-//! use bitcoin_hashes::Hash;
+//! use unilayer_hashes::sha256;
+//! use unilayer_hashes::Hash;
 //!
 //! #[cfg(std)]
 //! # fn main() -> std::io::Result<()> {
@@ -44,8 +44,8 @@
 //! Hashing content by [`std::io::Write`] on HashEngine:
 //!
 //! ```rust
-//! use bitcoin_hashes::sha256;
-//! use bitcoin_hashes::Hash;
+//! use unilayer_hashes::sha256;
+//! use unilayer_hashes::Hash;
 //! use std::io::Write;
 //!
 //! #[cfg(std)]
@@ -117,7 +117,7 @@ pub mod serde_macros;
 pub mod cmp;
 pub mod hash160;
 pub mod hmac;
-#[cfg(feature = "bitcoin-io")]
+#[cfg(feature = "unilayer-io")]
 mod impls;
 pub mod ripemd160;
 pub mod sha1;
@@ -227,7 +227,7 @@ pub trait Hash:
     /// Returns an all zero hash.
     ///
     /// An all zeros hash is a made up construct because there is not a known input that can create
-    /// it, however it is used in various places in Bitcoin e.g., the Bitcoin genesis block's
+    /// it, however it is used in various places in UniLayer e.g., the UniLayer genesis block's
     /// previous blockhash and the coinbase transaction's outpoint txid.
     fn all_zeros() -> Self;
 }

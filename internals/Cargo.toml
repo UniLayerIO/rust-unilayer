@@ -1,11 +1,11 @@
 [package]
-name = "bitcoin-internals"
+name = "unilayer-internals"
 version = "0.2.0"
-authors = ["Andrew Poelstra <apoelstra@wpsoftware.net>", "The Rust Bitcoin developers"]
+authors = ["Andrew Poelstra <apoelstra@wpsoftware.net>", "The Rust Bitcoin developers", "The Rust UniLayer developers"]
 license = "CC0-1.0"
-repository = "https://github.com/rust-bitcoin/rust-bitcoin/"
+repository = "https://github.com/UniLayerTeam/rust-unilayer/"
 documentation = "https://docs.rs/bitcoin-internals"
-description = "Internal types and macros used by rust-bitcoin ecosystem"
+description = "Internal types and macros used by rust-unilayer ecosystem"
 categories = ["cryptography::cryptocurrencies"]
 keywords = ["internal"]
 readme = "README.md"

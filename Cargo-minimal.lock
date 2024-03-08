@@ -12,7 +12,7 @@ checksum = "08f9b8508dccb7687a1d6c4ce66b2b0ecef467c94667de27d8d7fe1f8d2a9cdc"
 name = "base58check"
 version = "0.1.0"
 dependencies = [
- "bitcoin_hashes",
+ "unilayer_hashes",
  "hex-conservative",
 ]
 
@@ -39,17 +39,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "bitcoin"
+name = "unilayer"
 version = "0.31.0"
 dependencies = [
  "base58check",
  "base64",
  "bech32",
  "bincode",
- "bitcoin-internals",
- "bitcoin-io",
- "bitcoin-units",
- "bitcoin_hashes",
+ "unilayer-internals",
+ "unilayer-io",
+ "unilayer-units",
+ "unilayer_hashes",
  "bitcoinconsensus",
  "hex-conservative",
  "hex_lit",
@@ -62,10 +62,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "bitcoin-fuzz"
+name = "unilayer-fuzz"
 version = "0.0.1"
 dependencies = [
- "bitcoin",
+ "unilayer",
  "honggfuzz",
  "serde",
  "serde_cbor",
@@ -73,31 +73,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "bitcoin-internals"
+name = "unilayer-internals"
 version = "0.2.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "bitcoin-io"
+name = "unilayer-io"
 version = "0.1.1"
 
 [[package]]
-name = "bitcoin-units"
+name = "unilayer-units"
 version = "0.1.0"
 dependencies = [
- "bitcoin-internals",
+ "unilayer-internals",
  "serde",
  "serde_json",
  "serde_test",
 ]
 
 [[package]]
-name = "bitcoin_hashes"
+name = "unilayer_hashes"
 version = "0.13.0"
 dependencies = [
- "bitcoin-io",
+ "unilayer-io",
  "hex-conservative",
  "schemars",
  "serde",
@@ -347,7 +347,7 @@ version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2acea373acb8c21ecb5a23741452acd2593ed44ee3d343e72baaa143bc89d0d5"
 dependencies = [
- "bitcoin_hashes",
+ "unilayer_hashes",
  "rand",
  "secp256k1-sys",
  "serde",

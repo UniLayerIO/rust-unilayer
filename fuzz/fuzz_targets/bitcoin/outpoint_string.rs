@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use bitcoin::blockdata::transaction::OutPoint;
-use bitcoin::consensus::encode;
+use unilayer::blockdata::transaction::OutPoint;
+use unilayer::consensus::encode;
 use honggfuzz::fuzz;
 
 fn do_test(data: &[u8]) {

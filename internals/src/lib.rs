@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: CC0-1.0
 
-//! # Rust Bitcoin Internal
+//! # Rust UniLayer Internal
 //!
 //! This crate is only meant to be used internally by crates in the
-//! [rust-bitcoin](https://github.com/rust-bitcoin) ecosystem.
+//! [rust-unilayer](https://github.com/UniLayerIO/rust-unilayer) ecosystem.
 //!
 
 #![no_std]

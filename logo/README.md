@@ -1,5 +1,8 @@
 # Rust Bitcoin Logo
 
+##
+NOTE: Logo for UniLayer would be updated later.
+
 ## Files
 
 Included are:

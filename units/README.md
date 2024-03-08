@@ -1,7 +1,9 @@
-Bitcoin Units
+Bitcoin/UniLayer Units
 =============
 
-This crate provides basic Bitcoin numeric units such as `Amount`.
+This crate provides basic Bitcoin/UniLayer numeric units such as `Amount`.
+
+Note: UniLayer Network uses int128 to store amounts.
 
 
 ## Minimum Supported Rust Version (MSRV)

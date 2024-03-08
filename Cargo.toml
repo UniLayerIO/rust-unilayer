@@ -1,21 +1,21 @@
 [workspace]
-members = ["bitcoin", "hashes", "internals", "fuzz", "io", "units", "base58"]
+members = ["unilayer", "hashes", "internals", "fuzz", "io", "units", "base58"]
 resolver = "2"
 
 [patch.crates-io.base58check]
 path = "base58"
 
-[patch.crates-io.bitcoin]
-path = "bitcoin"
+[patch.crates-io.unilayer]
+path = "unilayer"
 
-[patch.crates-io.bitcoin_hashes]
+[patch.crates-io.unilayer_hashes]
 path = "hashes"
 
-[patch.crates-io.bitcoin-internals]
+[patch.crates-io.unilayer-internals]
 path = "internals"
 
-[patch.crates-io.bitcoin-io]
+[patch.crates-io.unilayer-io]
 path = "io"
 
-[patch.crates-io.bitcoin-units]
+[patch.crates-io.unilayer-units]
 path = "units"

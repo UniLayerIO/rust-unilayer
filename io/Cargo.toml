@@ -1,9 +1,9 @@
 [package]
-name = "bitcoin-io"
+name = "unilayer-io"
 version = "0.1.1"
 authors = ["Matt Corallo <birchneutea@mattcorallo.com>"]
 license = "CC0-1.0"
-repository = "https://github.com/rust-bitcoin/rust-bitcoin"
+repository = "https://github.com/UniLayerTeam/rust-unilayer"
 documentation = "https://docs.rs/bitcoin-io/"
 description = "Simple I/O traits for no-std (and std) environments"
 categories = ["no-std"]

@@ -17,7 +17,7 @@ use crate::{ripemd160, sha256, FromSliceError};
 crate::internal_macros::hash_type! {
     160,
     false,
-    "Output of the Bitcoin HASH160 hash function. (RIPEMD160(SHA256))"
+    "Output of the UniLayer HASH160 hash function. (RIPEMD160(SHA256))"
 }
 
 type HashEngine = sha256::HashEngine;
@@ -50,7 +50,7 @@ mod tests {
 
         #[rustfmt::skip]
         let tests = vec![
-            // Uncompressed pubkey obtained from Bitcoin key; data from validateaddress
+            // Uncompressed pubkey obtained from UniLayer key; data from validateaddress
             Test {
                 input: vec![
                     0x04, 0xa1, 0x49, 0xd7, 0x6c, 0x5d, 0xe2, 0x7a, 0x2d,
