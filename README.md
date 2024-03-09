@@ -48,6 +48,25 @@ rules to validate data, and this library is simply unable to implement the same 
 Given the complexity of both C++ and Rust, it is unlikely that this will ever be fixed, and there
 are no plans to do so. Of course, patches to fix specific consensus incompatibilities are welcome.
 
+## Key differences from original Bitcoin-Rust
+
+Since UniLayer netwotk uses int128 containers to store values of transactions, it affects sizes of transactions, the way they are processing and storing resulted values. Please keep in mind that since the value can be negative, using simple compact number encryption won't due to 0x80 byte collision. UniLayer uses its own ZigZag implementation to solve this. Also it is important to know that script sigs are also supporting int128 values there.
+
+Another important note that UniLayer has EVM and thus it has additional opcodes and standard transaction types.
+
+UniLayer Network utilizes double-hashing.
+
+Schemes of blocks and transactions has some fields specific for dPos consensus and fields needed to provide transparent EVM state and gas prices.
+
+Also since UniLayer supports cascade signature from the Metamask it also supports signing by RLP transaction the UTXO transaction which means that there is one completely different standard signature type aside from ECDSA, Taproots and others. 
+
+At the moment the node is supported only partially. Tests aren't supported due to difference in magic bytes. 
+There is a plan to provide a full support later.
+
+Also it is important to note that the original Bitcoin Rust repository interpreting CompactSize as a VarInt which is incorrect. But normally that wouldn't be a problem due to rare use of VarInt in the Bitcoin Core's code. Yet it may become critical when the application tries to read blockdata from Bitcoin data folder. For the UniLayer it has significant value since basically every amount value in the chain stored using very similar algorithm. 
+
+We will create a PR to the Bitcoin Rust with the fix later.
+
 ### Support for 16-bit pointer sizes
 
 16-bit pointer sizes are not supported and we can't promise they will be. If you care about them
@@ -195,25 +214,6 @@ git config --local core.hooksPath githooks/
 ```
 
 Alternatively add symlinks in your `.git/hooks` directory to any of the githooks we provide.
-
-## Key differences from original Bitcoin-Rust
-
-Since UniLayer netwotk uses int128 containers to store values of transactions, it affects sizes of transactions, the way they are processing and storing resulted values. Please keep in mind that since the value can be negative, using simple compact number encryption won't due to 0x80 byte collision. UniLayer uses its own ZigZag implementation to solve this. Also it is important to know that script sigs are also supporting int128 values there.
-
-Another important note that UniLayer has EVM and thus it has additional opcodes and standard transaction types.
-
-UniLayer Network utilizes double-hashing.
-
-Schemes of blocks and transactions has some fields specific for dPos consensus and fields needed to provide transparent EVM state and gas prices.
-
-Also since UniLayer supports cascade signature from the Metamask it also supports signing by RLP transaction the UTXO transaction which means that there is one completely different standard signature type aside from ECDSA, Taproots and others. 
-
-At the moment the node is supported only partially. Tests aren't supported due to difference in magic bytes. 
-There is a plan to provide a full support later.
-
-Also it is important to note that the original Bitcoin Rust repository interpreting CompactSize as a VarInt which is incorrect. But normally that wouldn't be a problem due to rare use of VarInt in the Bitcoin Core's code. Yet it may become critical when the application tries to read blockdata from Bitcoin data folder. For the UniLayer it has significant value since basically every amount value in the chain stored using very similar algorithm. 
-
-We will create a PR to the Bitcoin Rust with the fix later.
 
 ## Release Notes
 
