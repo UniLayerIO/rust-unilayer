@@ -24,11 +24,11 @@ use crate::blockdata::script::{Script, ScriptBuf};
 use crate::blockdata::witness::Witness;
 use crate::blockdata::FeeRate;
 use crate::consensus::{encode, Decodable, Encodable};
+use crate::error::{PrefixedHexError, UnprefixedHexError, ContainsPrefixError, MissingPrefixError};
 use crate::taproot::{Signature};
 use crate::taproot::serialized_signature::{self};
 use crate::internal_macros::{impl_consensus_encoding, impl_hashencode};
-use crate::parse::impl_parse_str_from_int_infallible;
-use crate::string::FromHexStr;
+use crate::parse::{self, impl_parse_str_from_int_infallible};
 use crate::{prelude::*, PublicKey};
 use crate::{Amount, SignedAmount, CompactSize};
 #[rustfmt::skip]                // Keep public re-exports separate.
@@ -405,6 +405,29 @@ impl Sequence {
     pub fn is_time_locked(&self) -> bool {
         self.is_relative_lock_time() & (self.0 & Sequence::LOCK_TYPE_MASK > 0)
     }
+    
+    /// Creates a `Sequence` from an prefixed hex string.
+    pub fn from_hex(s: &str) -> Result<Self, PrefixedHexError> {
+        let stripped = if let Some(stripped) = s.strip_prefix("0x") {
+            stripped
+        } else if let Some(stripped) = s.strip_prefix("0X") {
+            stripped
+        } else {
+            return Err(MissingPrefixError::new(s).into());
+        };
+
+        let sequence = parse::hex_u32(stripped)?;
+        Ok(Self::from_consensus(sequence))
+    }
+
+    /// Creates a `Sequence` from an unprefixed hex string.
+    pub fn from_unprefixed_hex(s: &str) -> Result<Self, UnprefixedHexError> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            return Err(ContainsPrefixError::new(s).into());
+        }
+        let lock_time = parse::hex_u32(s)?;
+        Ok(Self::from_consensus(lock_time))
+    }
 
     /// Creates a relative lock-time using block height.
     #[inline]
@@ -475,15 +498,6 @@ impl Sequence {
     ///
     /// BIP-68 only uses the low 16 bits for relative lock value.
     fn low_u16(&self) -> u16 { self.0 as u16 }
-}
-
-impl FromHexStr for Sequence {
-    type Error = crate::parse::ParseIntError;
-
-    fn from_hex_str_no_prefix<S: AsRef<str> + Into<String>>(s: S) -> Result<Self, Self::Error> {
-        let sequence = crate::parse::hex_u32(s)?;
-        Ok(Self::from_consensus(sequence))
-    }
 }
 
 impl Default for Sequence {
@@ -2417,21 +2431,33 @@ mod tests {
     }
 
     #[test]
-    fn sequence_from_str_hex_happy_path() {
-        let sequence = Sequence::from_hex_str("0xFFFFFFFF").unwrap();
+    fn sequence_from_hex_lower() {
+        let sequence = Sequence::from_hex("0xffffffff").unwrap();
         assert_eq!(sequence, Sequence::MAX);
     }
 
     #[test]
-    fn sequence_from_str_hex_no_prefix_happy_path() {
-        let sequence = Sequence::from_hex_str_no_prefix("FFFFFFFF").unwrap();
+    fn sequence_from_hex_upper() {
+        let sequence = Sequence::from_hex("0XFFFFFFFF").unwrap();
+        assert_eq!(sequence, Sequence::MAX);
+    }
+
+    #[test]
+    fn sequence_from_unprefixed_hex_lower() {
+        let sequence = Sequence::from_unprefixed_hex("ffffffff").unwrap();
+        assert_eq!(sequence, Sequence::MAX);
+    }
+
+    #[test]
+    fn sequence_from_unprefixed_hex_upper() {
+        let sequence = Sequence::from_unprefixed_hex("FFFFFFFF").unwrap();
         assert_eq!(sequence, Sequence::MAX);
     }
 
     #[test]
     fn sequence_from_str_hex_invalid_hex_should_err() {
         let hex = "0xzb93";
-        let result = Sequence::from_hex_str(hex);
+        let result = Sequence::from_hex(hex);
         assert!(result.is_err());
     }
 

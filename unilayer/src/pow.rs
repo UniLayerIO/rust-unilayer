@@ -17,9 +17,8 @@ use crate::blockdata::block::BlockHash;
 use crate::consensus::encode::{self, Decodable, Encodable};
 #[cfg(doc)]
 use crate::consensus::Params;
-use crate::string::FromHexStr;
-use crate::prelude::*;
-use crate::Network;
+use crate::error::{PrefixedHexError, UnprefixedHexError, ContainsPrefixError, MissingPrefixError};
+use crate::{parse, Network};
 
 /// Implement traits and methods shared by `Target` and `Work`.
 macro_rules! do_impl {
