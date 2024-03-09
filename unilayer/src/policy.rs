@@ -19,8 +19,9 @@ use super::blockdata::constants::{MAX_BLOCK_SIGOPS_COST, WITNESS_SCALE_FACTOR};
 /// Maximum weight of a transaction for it to be relayed by most nodes on the network
 pub const MAX_STANDARD_TX_WEIGHT: u32 = 400_000;
 
-/// Minimum non-witness size for a standard transaction (1 segwit input + 1 P2WPKH output = 82 bytes)
-pub const MIN_STANDARD_TX_NONWITNESS_SIZE: u32 = 82;
+/// Minimum non-witness size for a standard transaction (1 segwit input + 1 P2WPKH output = 80 bytes)
+/// Amount encoded by varint could take 2 bytes
+pub const MIN_STANDARD_TX_NONWITNESS_SIZE: u32 = 80;
 
 /// Maximum number of sigops in a standard tx.
 pub const MAX_STANDARD_TX_SIGOPS_COST: u32 = MAX_BLOCK_SIGOPS_COST as u32 / 5;
@@ -34,15 +35,15 @@ pub const DEFAULT_BYTES_PER_SIGOP: u32 = 20;
 
 /// The minimum feerate, in sats per kilo-virtualbyte, for defining dust. An output is considered
 /// dust if spending it under this feerate would cost more in fee.
-pub const DUST_RELAY_TX_FEE: u32 = 3_000;
+pub const DUST_RELAY_TX_FEE: u32 = 3_000; // TODO: colculate more precise value
 
 /// Minimum feerate, in sats per virtual kilobyte, for a transaction to be relayed by most nodes on
 /// the network.
-pub const DEFAULT_MIN_RELAY_TX_FEE: u32 = 1_000;
+pub const DEFAULT_MIN_RELAY_TX_FEE: u32 = 1_000; // TODO: colculate more precise value
 
 /// Default number of hours for an unconfirmed transaction to expire in most of the network nodes'
 /// mempools.
-pub const DEFAULT_MEMPOOL_EXPIRY: u32 = 336;
+pub const DEFAULT_MEMPOOL_EXPIRY: u32 = 336; // TODO: colculate more precise value
 
 /// The virtual transaction size, as computed by default by ulrd node. TODO: ensure factor of int128 Amount container
 pub fn get_virtual_tx_size(weight: i64, n_sigops: i64) -> i64 {
