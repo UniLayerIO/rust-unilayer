@@ -636,7 +636,7 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
         //      scriptPubKey (35): scriptPubKey of the previous output spent by this input, serialized as script inside CTxOut. Its size is always 35 bytes.
         //      nSequence (4): nSequence of this input.
         if anyone_can_pay {
-            let txin = &self.tx.borrow().tx_in(input_index).map_err(SigningDataError::sighash)?;
+            let txin: &&TxIn = &self.tx.borrow().tx_in(input_index).map_err(SigningDataError::sighash)?;
             let previous_output = prevouts.get(input_index).map_err(SigningDataError::sighash)?;
             txin.previous_output.consensus_encode(writer)?;
             previous_output.value.consensus_encode(writer)?;
@@ -786,7 +786,7 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
         }
 
         {
-            let txin = &self.tx.borrow().tx_in(input_index).map_err(SigningDataError::sighash)?;
+            let txin: &&TxIn = &self.tx.borrow().tx_in(input_index).map_err(SigningDataError::sighash)?;
             txin.previous_output.consensus_encode(writer)?;
             script_code.consensus_encode(writer)?;
             value.consensus_encode(writer)?;
