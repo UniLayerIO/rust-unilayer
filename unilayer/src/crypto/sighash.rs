@@ -275,6 +275,8 @@ pub enum PrevoutsIndexError {
     InvalidAllIndex,
 }
 
+internals::impl_from_infallible!(PrevoutsIndexError);
+
 impl fmt::Display for PrevoutsIndexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use PrevoutsIndexError::*;
@@ -1154,6 +1156,8 @@ pub enum TaprootError {
     InvalidSighashType(u32),
 }
 
+internals::impl_from_infallible!(TaprootError);
+
 impl fmt::Display for TaprootError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use TaprootError::*;
@@ -1210,6 +1214,8 @@ pub enum P2wpkhError {
     /// Script is not a witness program for a p2wpkh output.
     NotP2wpkhScript,
 }
+
+internals::impl_from_infallible!(P2wpkhError);
 
 impl From<transaction::InputsIndexError> for P2wpkhError {
     fn from(value: transaction::InputsIndexError) -> Self {
@@ -1275,6 +1281,8 @@ pub enum AnnexError {
     /// Incorrect prefix byte in the annex.
     IncorrectPrefix(u8),
 }
+
+internals::impl_from_infallible!(AnnexError);
 
 impl fmt::Display for AnnexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1381,6 +1389,8 @@ pub enum SigningDataError<E> {
     /// An argument to the called sighash function was invalid.
     Sighash(E),
 }
+
+internals::impl_from_infallible!(SigningDataError<E>);
 
 impl<E> SigningDataError<E> {
     /// Returns the sighash variant, panicking if it's IO.

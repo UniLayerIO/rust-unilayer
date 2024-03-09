@@ -627,6 +627,8 @@ pub enum Error {
     Parse(ParseIntError),
 }
 
+internals::impl_from_infallible!(Error);
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Error::*;
@@ -724,6 +726,8 @@ pub enum OperationError {
     InvalidComparison,
 }
 
+internals::impl_from_infallible!(OperationError);
+
 impl fmt::Display for OperationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use OperationError::*;
@@ -754,6 +758,8 @@ enum ParseError {
     // we use i64 to have nicer messages for negative values
     Conversion(i64),
 }
+
+internals::impl_from_infallible!(ParseError);
 
 impl ParseError {
     fn invalid_int<S: Into<String>>(s: S) -> impl FnOnce(core::num::ParseIntError) -> Self {

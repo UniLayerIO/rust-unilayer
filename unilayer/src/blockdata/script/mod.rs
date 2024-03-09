@@ -700,6 +700,8 @@ pub enum Error {
     Serialization,
 }
 
+internals::impl_from_infallible!(Error);
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Error::*;
@@ -737,6 +739,8 @@ enum UintError {
     EarlyEndOfScript,
     NumericOverflow,
 }
+
+internals::impl_from_infallible!(UintError);
 
 impl From<UintError> for Error {
     fn from(error: UintError) -> Self {
