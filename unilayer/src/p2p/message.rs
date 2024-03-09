@@ -697,6 +697,7 @@ mod test {
         assert!(short_cs.is_err());
     }
 
+    // TODO: actualize
     #[test]
     #[rustfmt::skip]
     fn serialize_verack_test() {
@@ -776,7 +777,7 @@ mod test {
         let msg = msg.unwrap();
         assert_eq!(msg.magic, Magic::UNILAYER);
         if let NetworkMessage::Version(version_msg) = msg.payload {
-            assert_eq!(version_msg.version, 70015);
+            assert_eq!(version_msg.version, 70918);
             assert_eq!(
                 version_msg.services,
                 ServiceFlags::NETWORK
@@ -787,7 +788,7 @@ mod test {
             assert_eq!(version_msg.timestamp, 1548554224);
             assert_eq!(version_msg.nonce, 13952548347456104954);
             assert_eq!(version_msg.user_agent, "/Satoshi:0.17.1/");
-            assert_eq!(version_msg.start_height, 560275);
+            assert_eq!(version_msg.start_height, 777);
             assert!(version_msg.relay);
         } else {
             panic!("Wrong message type");
@@ -822,7 +823,7 @@ mod test {
         assert_eq!(consumed, data.to_vec().len() - 2);
         assert_eq!(msg.magic, Magic::UNILAYER);
         if let NetworkMessage::Version(version_msg) = msg.payload {
-            assert_eq!(version_msg.version, 70015);
+            assert_eq!(version_msg.version, 70918);
             assert_eq!(
                 version_msg.services,
                 ServiceFlags::NETWORK
@@ -833,7 +834,7 @@ mod test {
             assert_eq!(version_msg.timestamp, 1548554224);
             assert_eq!(version_msg.nonce, 13952548347456104954);
             assert_eq!(version_msg.user_agent, "/Satoshi:0.17.1/");
-            assert_eq!(version_msg.start_height, 560275);
+            assert_eq!(version_msg.start_height, 777);
             assert!(version_msg.relay);
         } else {
             panic!("Wrong message type");
