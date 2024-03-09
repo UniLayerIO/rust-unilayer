@@ -1658,6 +1658,7 @@ mod tests {
     #[test]
     fn work_log2() {
         // Compare work log2 to historical UniLayer Core values found in Core logs.
+        // TODO: implement dPOS work concept
         let tests: Vec<(u128, f64)> = vec![
             // (chainwork, core log2)                // height
             (0x200020002, 33.000022)                // 1
