@@ -141,6 +141,8 @@ cargo test
 Please refer to the [`cargo` documentation](https://doc.rust-lang.org/stable/cargo/) for more
 detailed instructions.
 
+It is recommended to use rust-analyzer with VS Code but at the moment it's not supporting use macro_use with re-export of derived feature "serde", so the feature "rust-analyzer.diagnostics" is disabled for now. You can turn it on but at that case you'll have to ignore errors about unresolved-external-crate.
+
 ### Just
 
 We support [`just`](https://just.systems/man/en/) for running dev workflow commands. Run `just` from
