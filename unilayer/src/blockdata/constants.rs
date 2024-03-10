@@ -214,12 +214,12 @@ impl ChainHash {
 
 #[cfg(test)]
 mod test {
-    use core::str::FromStr;
+    // use core::str::FromStr;
 
-    use hex::test_hex_unwrap as hex;
+    // use hex::test_hex_unwrap as hex;
 
     use super::*;
-    use crate::consensus::encode::serialize;
+    // use crate::consensus::encode::serialize;
 
     #[test]
     fn bitcoin_genesis_first_transaction() {

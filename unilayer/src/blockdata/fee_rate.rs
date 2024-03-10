@@ -19,6 +19,9 @@ use crate::blockdata::weight::Weight;
 pub struct FeeRate(u128);
 
 impl FeeRate {
+    // TODO: validate rates
+    // the basic formula in the UniLayer Network is 6 * CENT (aULR * 1e9) is min fee and 60 * CENT is avg fee
+
     /// 0 sat/kwu.
     ///
     /// Equivalent to [`MIN`](Self::MIN), may better express intent in some contexts.

@@ -394,7 +394,8 @@ impl Script {
     /// broadcastable on today's UniLayer network.
     ///
     /// Dust depends on the -dustrelayfee value of the UniLayer Core node you are broadcasting to.
-    /// This function uses the default value of 0.00003 BTC/kB (3 sat/vByte).
+    /// This function uses the default value of 0.000000000000003 ULR/kB (300 nsats/vByte).
+    /// TODO: actualize values
     ///
     /// To use a custom value, use [`minimal_non_dust_custom`].
     ///
@@ -409,7 +410,8 @@ impl Script {
     /// Dust depends on the -dustrelayfee value of the UniLayer Core node you are broadcasting to.
     /// This function lets you set the fee rate used in dust calculation.
     ///
-    /// The current default value in UniLayer Core (as of v1) is 3 sat/vByte.
+    /// The current default value in UniLayer Core (as of v1) is 300 nsats/vByte.
+    /// TODO: actualize values
     ///
     /// To use the default UniLayer Core value, use [`minimal_non_dust`].
     ///
@@ -491,6 +493,7 @@ impl Script {
                                 _ => {
                                     // MAX_PUBKEYS_PER_MULTISIG from Bitcoin Core
                                     // https://github.com/bitcoin/bitcoin/blob/v25.0/src/script/script.h#L29-L30
+                                    // It is the same for UniLayer Network
                                     n += 20;
                                 }
                             }

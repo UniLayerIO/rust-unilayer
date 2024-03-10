@@ -128,6 +128,7 @@ impl Psbt {
     ///
     /// As of 2023, even the biggest overpayers during the highest fee markets only paid around
     /// 1000 sats/vByte. 25k sats/vByte is obviously a mistake at this point.
+    /// TODO: actualize
     ///
     /// [`extract_tx`]: Psbt::extract_tx
     pub const DEFAULT_MAX_FEE_RATE: FeeRate = FeeRate::from_sat_per_vb_unchecked(25_000);

@@ -587,7 +587,8 @@ impl TxOut {
     /// per current Core policy.
     ///
     /// Dust depends on the -dustrelayfee value of the UniLayer Core node you are broadcasting to.
-    /// This function uses the default value of 0.00003 BTC/kB (3 sat/vByte).
+    /// This function uses the default value of 0.000000000000003 ULR/kB (300 nsats/vByte).
+    /// TODO: actualize values
     ///
     /// To use a custom value, use [`minimal_non_dust_custom`].
     ///
@@ -602,7 +603,8 @@ impl TxOut {
     /// Dust depends on the -dustrelayfee value of the UniLayer Core node you are broadcasting to.
     /// This function lets you set the fee rate used in dust calculation.
     ///
-    /// The current default value in UniLayer Core (as of v1) is 3 sat/vByte.
+    /// The current default value in UniLayer Core (as of v1) is 300 nsats/vByte.
+    /// TODO: actualize values
     ///
     /// To use the default UniLayer Core value, use [`minimal_non_dust`].
     ///
@@ -928,7 +930,9 @@ pub struct Transaction {
 
     // Here vector is used as a wrapping object, that can be empty, 
     // if transaction doesn't contain ValidatorRegister or ValidatorVote
+    /// Collection of registers voted for the transaction
     pub validator_register: Vec<ValidatorRegister>,
+    /// Collection of registers' votes for the transaction
     pub validator_vote: Vec<ValidatorVote>,
     /// Gas price that was active at the transaction initiation moment, only after genesis trx
     pub gas_price: Amount,
