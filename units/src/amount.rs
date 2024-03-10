@@ -879,9 +879,9 @@ impl Amount {
     /// Exactly one aulr (0.1 nsat).
     pub const ONE_AULR: Amount = Amount(1);
     /// Exactly one ULR.
-    pub const ONE_ULR: Amount = Self::from_int_btc(1);
+    pub const ONE_ULR: Amount = Self::from_int_ulr(1);
     /// The maximum value allowed as an amount. Useful for sanity checking.
-    pub const MAX_MONEY: Amount = Self::from_int_btc(21_000_000);
+    pub const MAX_MONEY: Amount = Self::from_int_ulr(21_000_000);
     /// The minimum value of an amount.
     pub const MIN: Amount = Amount::ZERO;
     /// The maximum value of an amount.
@@ -897,7 +897,7 @@ impl Amount {
 
     /// Convert from a value expressing ULRs to an [Amount].
     #[cfg(feature = "alloc")]
-    pub fn from_btc(btc: f64) -> Result<Amount, ParseAmountError> {
+    pub fn from_ulr(btc: f64) -> Result<Amount, ParseAmountError> {
         Amount::from_float_in(btc, Denomination::ULR)
     }
 
@@ -908,7 +908,7 @@ impl Amount {
     ///
     /// The function panics if the argument multiplied by the number of aULRs
     /// per ULR overflows a u128 type.
-    pub const fn from_int_btc(ulr: u128) -> Amount {
+    pub const fn from_int_ulr(ulr: u128) -> Amount {
         match ulr.checked_mul(u128::MAX) {
             Some(amount) => Amount::from_sat(amount),
             None => {
@@ -960,10 +960,10 @@ impl Amount {
     /// ```
     /// # use unilayer_units::amount::{Amount, Denomination};
     /// let amount = Amount::from_sat(100_000);
-    /// assert_eq!(amount.to_btc(), amount.to_float_in(Denomination::ULR))
+    /// assert_eq!(amount.to_ulr(), amount.to_float_in(Denomination::ULR))
     /// ```
     #[cfg(feature = "alloc")]
-    pub fn to_btc(self) -> f64 { self.to_float_in(Denomination::ULR) }
+    pub fn to_ulr(self) -> f64 { self.to_float_in(Denomination::ULR) }
 
     /// Convert this [Amount] in floating-point notation with a given
     /// denomination.
@@ -1282,7 +1282,7 @@ impl SignedAmount {
 
     /// Convert from a value expressing ULRs to an [SignedAmount].
     #[cfg(feature = "alloc")]
-    pub fn from_btc(btc: f64) -> Result<SignedAmount, ParseAmountError> {
+    pub fn from_ulr(btc: f64) -> Result<SignedAmount, ParseAmountError> {
         SignedAmount::from_float_in(btc, Denomination::ULR)
     }
 
@@ -1324,7 +1324,7 @@ impl SignedAmount {
     ///
     /// Please be aware of the risk of using floating-point numbers.
     #[cfg(feature = "alloc")]
-    pub fn to_btc(self) -> f64 { self.to_float_in(Denomination::ULR) }
+    pub fn to_ulr(self) -> f64 { self.to_float_in(Denomination::ULR) }
 
     /// Convert this [SignedAmount] in floating-point notation with a given
     /// denomination.
@@ -1719,7 +1719,7 @@ pub mod serde {
         #[cfg(feature = "alloc")]
         fn des_btc<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
             use serde::de::Error;
-            Amount::from_btc(f64::deserialize(d)?)
+            Amount::from_ulr(f64::deserialize(d)?)
                 .map_err(DisplayFullError)
                 .map_err(D::Error::custom)
         }
@@ -1732,7 +1732,7 @@ pub mod serde {
         }
         #[cfg(feature = "alloc")]
         fn ser_btc_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
-            s.serialize_some(&self.to_btc())
+            s.serialize_some(&self.to_ulr())
         }
     }
 
@@ -1751,7 +1751,7 @@ pub mod serde {
         #[cfg(feature = "alloc")]
         fn des_btc<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
             use serde::de::Error;
-            SignedAmount::from_btc(f64::deserialize(d)?)
+            SignedAmount::from_ulr(f64::deserialize(d)?)
                 .map_err(DisplayFullError)
                 .map_err(D::Error::custom)
         }
@@ -1764,7 +1764,7 @@ pub mod serde {
         }
         #[cfg(feature = "alloc")]
         fn ser_btc_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
-            s.serialize_some(&self.to_btc())
+            s.serialize_some(&self.to_ulr())
         }
     }
 
@@ -2072,14 +2072,14 @@ mod tests {
     }
 
     #[test]
-    fn from_int_btc() {
-        let amt = Amount::from_int_btc(2);
+    fn from_int_ulr() {
+        let amt = Amount::from_int_ulr(2);
         assert_eq!(Amount::from_sat(2_000_000_000_000_000_000), amt);
     }
 
     #[should_panic]
     #[test]
-    fn from_int_btc_panic() { Amount::from_int_btc(u128::MAX); }
+    fn from_int_ulr_panic() { Amount::from_int_ulr(u128::MAX); }
 
     #[test]
     fn test_signed_amount_try_from_amount() {
@@ -2222,13 +2222,13 @@ mod tests {
             Err(OutOfRangeError::too_big(true).into())
         );
 
-        let btc = move |f| SignedAmount::from_btc(f).unwrap();
+        let btc = move |f| SignedAmount::from_ulr(f).unwrap();
         assert_eq!(btc(2.5).to_float_in(D::ULR), 2.5);
         assert_eq!(btc(-2.5).to_float_in(D::MilliULR), -2500.0);
         assert_eq!(btc(2.5).to_float_in(D::Satoshi), 250000000.0);
         assert_eq!(btc(-2.5).to_float_in(D::MilliSatoshi), -250000000000.0);
 
-        let btc = move |f| Amount::from_btc(f).unwrap();
+        let btc = move |f| Amount::from_ulr(f).unwrap();
         assert_eq!(&btc(0.0012).to_float_in(D::ULR).to_string(), "0.0012")
     }
 
