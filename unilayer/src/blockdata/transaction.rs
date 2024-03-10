@@ -355,7 +355,7 @@ impl Sequence {
     /// BIP-68 relative lock time disable flag mask.
     const LOCK_TIME_DISABLE_FLAG_MASK: u32 = 1 << 31;
     /// BIP-68 relative lock time type flag mask.
-    const LOCK_TYPE_MASK: u32 = 0x0000ffff;
+    const LOCK_TYPE_MASK: u32 = (1 << 22); // TODO: update value
 
     /// Returns `true` if the sequence number enables absolute lock-time ([`Transaction::lock_time`]).
     #[inline]

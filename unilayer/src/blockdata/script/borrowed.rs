@@ -428,11 +428,11 @@ impl Script {
                 0
             } else if self.is_witness_program() {
                 32 + 4 + 1 + (107 / 4) + 4 + // The spend cost copied from Core
-                    8 + // The serialized size of the TxOut's amount field
+                    8 + // The serialized size of the TxOut's avg amount field
                     self.consensus_encode(&mut sink()).expect("sinks don't error") as u128 // The serialized size of this script_pubkey
             } else {
                 32 + 4 + 1 + 107 + 4 + // The spend cost copied from Core
-                    8 + // The serialized size of the TxOut's amount field
+                    8 + // The serialized size of the TxOut's avg amount field
                     self.consensus_encode(&mut sink()).expect("sinks don't error") as u128 // The serialized size of this script_pubkey
             })
             .expect("dust_relay_fee or script length should not be absurdly large")
