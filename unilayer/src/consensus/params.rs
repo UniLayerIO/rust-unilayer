@@ -49,66 +49,81 @@ pub struct Params { // TODO: validate parameters
 }
 
 impl Params {
+    /// The mainnet parameters (alias for `Params::MAINNET`).
+    pub const UNILAYER: Params = Params::MAINNET;
+
+    // TODO: add chain-specific details, dPOS parameters included
+    /// The mainnet parameters.
+    pub const MAINNET: Params = Params {
+        network: Network::UniLayer,
+        bip16_time: 1333238400,                 // Apr 1 2012
+        bip34_height: 1,
+        bip65_height: 1,
+        bip66_height: 1, 
+        rule_change_activation_threshold: 10260, // 95%
+        miner_confirmation_window: 2016,
+        pow_limit: Target::MAX_ATTAINABLE_MAINNET,
+        pow_target_spacing: 15,            // 15 seconds.
+        pow_target_timespan: 2 * 15 * 60,  // 30 min
+        allow_min_difficulty_blocks: true, // POW
+        no_pow_retargeting: false,
+    };
+
+    /// The testnet parameters.
+    pub const TESTNET: Params = Params {
+        network: Network::Testnet,
+        bip16_time: 1333238400,                 // Apr 1 2012
+        bip34_height: 1,
+        bip65_height: 1,
+        bip66_height: 1,
+        rule_change_activation_threshold: 8100, // 75%
+        miner_confirmation_window: 2016,
+        pow_limit: Target::MAX_ATTAINABLE_TESTNET,
+        pow_target_spacing: 12,            // 12 seconds.
+        pow_target_timespan: 2 * 15 * 60,  // 30 min
+        allow_min_difficulty_blocks: true, // POW
+        no_pow_retargeting: false,
+    };
+
+    /// The signet parameters.
+    pub const SIGNET: Params = Params {
+        network: Network::Signet,
+        bip16_time: 1333238400,                 // Apr 1 2012
+        bip34_height: 1,
+        bip65_height: 1,
+        bip66_height: 1,
+        rule_change_activation_threshold: 10260, // 95%
+        miner_confirmation_window: 2016,
+        pow_limit: Target::MAX_ATTAINABLE_SIGNET,
+        pow_target_spacing: 12,            // 12 seconds.
+        pow_target_timespan: 2 * 15 * 60,  // 30 min
+        allow_min_difficulty_blocks: true, // POW
+        no_pow_retargeting: false,
+    };
+
+    /// The regtest parameters.
+    pub const REGTEST: Params = Params {
+        network: Network::Regtest,
+        bip16_time: 1333238400,  // Apr 1 2012
+        bip34_height: 1,
+        bip65_height: 1,
+        bip66_height: 1,
+        rule_change_activation_threshold: 108, // 75%
+        miner_confirmation_window: 144,
+        pow_limit: Target::MAX_ATTAINABLE_REGTEST,
+        pow_target_spacing: 12,            // 12 seconds.
+        pow_target_timespan: 2 * 15 * 60,  // 30 min
+        allow_min_difficulty_blocks: true, // POW
+        no_pow_retargeting: false,
+    };
+
     /// Creates parameters set for the given network.
     pub const fn new(network: Network) -> Self {
-        // TODO: add chain-specific details, dPOS parameters included
         match network {
-            Network::UniLayer => Params {
-                network: Network::UniLayer,
-                bip16_time: 1333238400,                 // Apr 1 2012
-                bip34_height: 1,
-                bip65_height: 1,
-                bip66_height: 1, 
-                rule_change_activation_threshold: 10260, // 95%
-                miner_confirmation_window: 2016,
-                pow_limit: Target::MAX_ATTAINABLE_MAINNET,
-                pow_target_spacing: 15,            // 15 seconds.
-                pow_target_timespan: 2 * 15 * 60,  // 30 min
-                allow_min_difficulty_blocks: true, // POW
-                no_pow_retargeting: false,
-            },
-            Network::Testnet => Params {
-                network: Network::Testnet,
-                bip16_time: 1333238400,                 // Apr 1 2012
-                bip34_height: 1,
-                bip65_height: 1,
-                bip66_height: 1,
-                rule_change_activation_threshold: 8100, // 75%
-                miner_confirmation_window: 2016,
-                pow_limit: Target::MAX_ATTAINABLE_TESTNET,
-                pow_target_spacing: 12,            // 12 seconds.
-                pow_target_timespan: 2 * 15 * 60,  // 30 min
-                allow_min_difficulty_blocks: true, // POW
-                no_pow_retargeting: false,
-            },
-            Network::Signet => Params {
-                network: Network::Signet,
-                bip16_time: 1333238400,                 // Apr 1 2012
-                bip34_height: 1,
-                bip65_height: 1,
-                bip66_height: 1,
-                rule_change_activation_threshold: 10260, // 95%
-                miner_confirmation_window: 2016,
-                pow_limit: Target::MAX_ATTAINABLE_SIGNET,
-                pow_target_spacing: 12,            // 12 seconds.
-                pow_target_timespan: 2 * 15 * 60,  // 30 min
-                allow_min_difficulty_blocks: true, // POW
-                no_pow_retargeting: false,
-            },
-            Network::Regtest => Params {
-                network: Network::Regtest,
-                bip16_time: 1333238400,  // Apr 1 2012
-                bip34_height: 1,
-                bip65_height: 1,
-                bip66_height: 1,
-                rule_change_activation_threshold: 108, // 75%
-                miner_confirmation_window: 144,
-                pow_limit: Target::MAX_ATTAINABLE_REGTEST,
-                pow_target_spacing: 12,            // 12 seconds.
-                pow_target_timespan: 2 * 15 * 60,  // 30 min
-                allow_min_difficulty_blocks: true, // POW
-                no_pow_retargeting: false,
-            },
+            Network::UniLayer => Params::MAINNET,
+            Network::Testnet => Params::TESTNET,
+            Network::Signet => Params::SIGNET,
+            Network::Regtest => Params::REGTEST,
         }
     }
 
