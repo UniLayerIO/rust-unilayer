@@ -124,7 +124,8 @@ impl From<&Script> for WScriptHash {
 /// more than 4 bytes, this is in line with Bitcoin Core (see [`CScriptNum::serialize`]).
 ///
 /// [`CScriptNum::serialize`]: <https://github.com/bitcoin/bitcoin/blob/8ae2808a4354e8dcc697f76bacc5e2f2befe9220/src/script/script.h#L345>
-pub fn write_scriptint(out: &mut [u8; 8], n: i64) -> usize { // TODO: ensure correctness for u128
+// TODO: add method to write u128 values since they are supported in UniLayer Network's script
+pub fn write_scriptint(out: &mut [u8; 8], n: i128) -> usize {
     let mut len = 0;
     if n == 0 {
         return len;
@@ -155,13 +156,59 @@ pub fn write_scriptint(out: &mut [u8; 8], n: i64) -> usize { // TODO: ensure cor
     len
 }
 
+// TODO: support negative int128 values
+/// Decodes an integer in script(minimal CScriptNum) format, varint for u128 implementation.
+pub fn read_scriptint128(v: &[u8]) -> Result<i128, Error> {
+    let _last = match v.last() {
+        Some(last) => last,
+        None => return Ok(0),
+    };
+    if v.len() > 8 {
+        return Err(Error::NumericOverflow);
+    }
+
+    let mut high: u64 = 0;
+    let mut low: u64 = 0;
+    let mut i: u8 = 0;
+
+    loop {
+        let ch_data = v[i as usize];
+        let a = low << 7;
+        let b = (ch_data & 0x7F) as u64;
+        low = a | b;
+        i += 1;
+        if (ch_data & 0x80) != 0 {
+            low += 1;
+        }
+        else {
+            break;
+        }
+    }
+
+    loop {
+        let ch_data = v[i as usize];
+        let a = high << 7;
+        let b = (ch_data & 0x7F) as u64;
+        high = a | b;
+        i += 1;
+        if (ch_data & 0x80) != 0 {
+            high += 1;
+        }
+        else {
+            break;
+        }
+    }
+
+    Ok((high as i128) << 64 ^ (low as i128))
+}
+
 /// Decodes an integer in script(minimal CScriptNum) format.
 ///
 /// Notice that this fails on overflow: the result is the same as in
-/// ulrd, that only 4-byte signed-magnitude values may be read as
+/// ulrd, that only 8-byte signed-magnitude values may be read as
 /// numbers. They can be added or subtracted (and a long time ago,
 /// multiplied and divided), and this may result in numbers which
-/// can't be written out in 4 bytes or less. This is ok! The number
+/// can't be written out in 8 bytes or less. This is ok! The number
 /// just can't be read as a number again.
 /// This is a bit crazy and subtle, but it makes sense: you can load
 /// 32-bit numbers and do anything with them, which back when mult/div
@@ -172,12 +219,15 @@ pub fn write_scriptint(out: &mut [u8; 8], n: i64) -> usize { // TODO: ensure cor
 /// This is basically a ranged type implementation.
 ///
 /// This code is based on the `CScriptNum` constructor in UniLayer Core (see `script.h`).
-pub fn read_scriptint(v: &[u8]) -> Result<i64, Error> {
+pub fn read_scriptint(v: &[u8]) -> Result<i128, Error> {
     let last = match v.last() {
         Some(last) => last,
         None => return Ok(0),
     };
     if v.len() > 4 {
+        return read_scriptint128(v);
+    }
+    if v.len() > 8 {
         return Err(Error::NumericOverflow);
     }
     // Comment and code copied from Bitcoin Core:
@@ -202,14 +252,17 @@ pub fn read_scriptint(v: &[u8]) -> Result<i64, Error> {
 
 /// Decodes an integer in script format without non-minimal error.
 ///
-/// The overflow error for slices over 4 bytes long is still there.
+/// The overflow error for slices over 8 bytes long is still there.
 /// See [`read_scriptint`] for a description of some subtleties of
 /// this function.
-pub fn read_scriptint_non_minimal(v: &[u8]) -> Result<i64, Error> {
+pub fn read_scriptint_non_minimal(v: &[u8]) -> Result<i128, Error> {
     if v.is_empty() {
         return Ok(0);
     }
     if v.len() > 4 {
+        return read_scriptint128(v);
+    }
+    if v.len() > 8 {
         return Err(Error::NumericOverflow);
     }
 
@@ -217,8 +270,8 @@ pub fn read_scriptint_non_minimal(v: &[u8]) -> Result<i64, Error> {
 }
 
 // Caller to guarantee that `v` is not empty.
-fn scriptint_parse(v: &[u8]) -> i64 {
-    let (mut ret, sh) = v.iter().fold((0, 0), |(acc, sh), n| (acc + ((*n as i64) << sh), sh + 8));
+fn scriptint_parse(v: &[u8]) -> i128 {
+    let (mut ret, sh) = v.iter().fold((0, 0), |(acc, sh), n| (acc + ((*n as i128) << sh), sh + 8));
     if v[v.len() - 1] & 0x80 != 0 {
         ret &= (1 << (sh - 1)) - 1;
         ret = -ret;

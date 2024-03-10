@@ -283,7 +283,7 @@ fn script_serialize() {
 
 #[test]
 fn scriptint_round_trip() {
-    fn build_scriptint(n: i64) -> Vec<u8> {
+    fn build_scriptint(n: i128) -> Vec<u8> {
         let mut buf = [0u8; 8];
         let len = write_scriptint(&mut buf, n);
         assert!(len <= 8);
