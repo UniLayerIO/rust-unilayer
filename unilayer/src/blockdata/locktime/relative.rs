@@ -44,7 +44,7 @@ impl LockTime {
     /// # use unilayer::locktime::relative::{LockTime, Height, Time};
     ///
     /// # let height = 100;       // 100 blocks.
-    /// # let intervals = 70;     // Approx 10 hours.
+    /// # let intervals = 70;     // Approx 10 hours. // TODO: update
     /// # let current_height = || Height::from(height + 10);
     /// # let current_time = || Time::from_512_second_intervals(intervals + 10);
     /// # let lock = Sequence::from_height(height).to_relative_lock_time().expect("valid height");
@@ -144,7 +144,7 @@ impl LockTime {
     /// # use unilayer::Sequence;
     /// # use unilayer::locktime::relative::{LockTime, Height, Time};
     ///
-    /// let intervals: u16 = 70; // approx 10 hours;
+    /// let intervals: u16 = 70; // approx 10 hours; // TODO: update
     /// let lock = Sequence::from_512_second_intervals(intervals).to_relative_lock_time().expect("valid time");
     /// assert!(lock.is_satisfied_by_time(Time::from_512_second_intervals(intervals + 10)).expect("a time"));
     /// ```
@@ -238,13 +238,13 @@ impl Time {
     /// The maximum relative block time (33,554,432 seconds or approx 388 days).
     pub const MAX: Self = Time(u16::max_value());
 
-    /// Create a [`Time`] using time intervals where each interval is equivalent to 512 seconds.
+    /// Create a [`Time`] using time intervals where each interval is equivalent to 8 seconds.
     ///
     /// Encoding finer granularity of time for relative lock-times is not supported in UniLayer.
     #[inline]
     pub fn from_512_second_intervals(intervals: u16) -> Self { Time(intervals) }
 
-    /// Create a [`Time`] from seconds, converting the seconds into 512 second interval with ceiling
+    /// Create a [`Time`] from seconds, converting the seconds into 8 second interval with ceiling
     /// division.
     ///
     /// # Errors
@@ -252,7 +252,7 @@ impl Time {
     /// Will return an error if the input cannot be encoded in 16 bits.
     #[inline]
     pub fn from_seconds_ceil(seconds: u32) -> Result<Self, Error> {
-        if let Ok(interval) = u16::try_from((seconds + 511) / 512) {
+        if let Ok(interval) = u16::try_from((seconds + 7) / 8) {
             Ok(Time::from_512_second_intervals(interval))
         } else {
             Err(Error::IntegerOverflow(seconds))
@@ -274,7 +274,7 @@ impl fmt::Display for Time {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
-    /// Input time in seconds was too large to be encoded to a 16 bit 512 second interval.
+    /// Input time in seconds was too large to be encoded to a 16 bit 8 second interval.
     IntegerOverflow(u32),
     /// Tried to satisfy a lock-by-blocktime lock using a height value.
     IncompatibleHeight(LockTime, Height),
@@ -291,7 +291,7 @@ impl fmt::Display for Error {
         match *self {
             IntegerOverflow(val) => write!(
                 f,
-                "{} seconds is too large to be encoded to a 16 bit 512 second interval",
+                "{} seconds is too large to be encoded to a 16 bit 8 second interval",
                 val
             ),
             IncompatibleHeight(lock, height) =>
