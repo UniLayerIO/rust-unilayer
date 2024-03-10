@@ -296,10 +296,10 @@ impl TryFrom<ChainHash> for Network {
     fn try_from(chain_hash: ChainHash) -> Result<Self, Self::Error> {
         match chain_hash {
             // Note: any new network entries must be matched against here.
-            ChainHash::UNILAYER => Ok(Network::UniLayer),
+            ChainHash::UNILAYER => Ok(Network::UniLayer), // <- not launched yet
             ChainHash::TESTNET => Ok(Network::Testnet),
-            ChainHash::SIGNET => Ok(Network::Signet),
             ChainHash::REGTEST => Ok(Network::Regtest),
+            ChainHash::SIGNET => Ok(Network::Signet), // <- unsupported at the moment
             _ => Err(UnknownChainHashError(chain_hash)),
         }
     }
