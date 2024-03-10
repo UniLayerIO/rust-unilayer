@@ -68,14 +68,13 @@ impl ServiceFlags {
     /// clients.
     pub const NETWORK: ServiceFlags = ServiceFlags(1 << 0);
 
-    /// GETUTXO means the node is capable of responding to the getutxo protocol request.  UniLayer
-    /// Core does not support this but a patch set called UniLayer XT does.
+    /// GETUTXO means the node is capable of responding to the getutxo protocol request (REST rest_getutxos).
     /// See BIP 64 for details on how this is implemented.
+    /// Inputs are sent over URI scheme (/rest/getutxos/checkmempool/txid1-n/txid2-n/...)
     pub const GETUTXO: ServiceFlags = ServiceFlags(1 << 1);
 
     /// BLOOM means the node is capable and willing to handle bloom-filtered connections.  UniLayer
-    /// Core nodes used to support this by default, without advertising this bit, but no longer do
-    /// as of protocol version 70011 (= NO_BLOOM_VERSION)
+    /// Core nodes used to support this by default. The minimum protocol version in UniLayer is 70918
     pub const BLOOM: ServiceFlags = ServiceFlags(1 << 2);
 
     /// WITNESS indicates that a node can be asked for blocks and transactions including witness
