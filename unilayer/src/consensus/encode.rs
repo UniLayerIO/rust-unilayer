@@ -584,7 +584,7 @@ impl Encodable for u128 {
     #[inline]
     fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> Result<usize, io::Error> {
         if *self == 0 {
-            w.emit_u8(0);
+            w.emit_u8(0)?;
             return Ok(1 as usize);
         }
 
@@ -614,7 +614,7 @@ impl Encodable for u128 {
             len += 1;
         };
 
-        w.emit_u8(len as u8);
+        w.emit_u8(len as u8)?;
         // TODO len -= 1; ?
 
         for _ in 0 .. len {
