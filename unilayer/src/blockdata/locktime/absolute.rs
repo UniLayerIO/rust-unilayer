@@ -26,14 +26,14 @@ use crate::prelude::*;
 /// `LockTime` values _below_ the threshold are interpreted as block heights, values _above_ (or
 /// equal to) the threshold are interpreted as block times (UNIX timestamp, seconds since epoch).
 ///
-/// Bitcoin is able to safely use this value because a block height greater than 500,000,000 would
-/// never occur because it would represent a height in approximately 9500 years. Conversely, block
-/// times under 500,000,000 will never happen because they would represent times before 1986 which
+/// Bitcoin is able to safely use this value because a block height greater than 1,500,000,000 would
+/// never occur because it would represent a height in approximately 713 years. Conversely, block
+/// times under 1,500,000,000 will never happen because they would represent times before 2017 which
 /// are, for obvious reasons, not useful within the UniLayer network.
 ///
 /// [Bitcoin Core]: https://github.com/bitcoin/bitcoin/blob/9ccaee1d5e2e4b79b0a7c29aadb41b97e4741332/src/script/script.h#L39
 /// Acutal UniLayer code reference will be provided later.
-pub const LOCK_TIME_THRESHOLD: u32 = 500_000_000;
+pub const LOCK_TIME_THRESHOLD: u32 = 1_500_000_000;
 
 /// An absolute lock time value, representing either a block height or a UNIX timestamp (seconds
 /// since epoch).
@@ -609,10 +609,10 @@ where
     f(n).map_err(ParseError::from).map_err(Into::into)
 }
 
-/// Returns true if `n` is a block height i.e., less than 500,000,000.
+/// Returns true if `n` is a block height i.e., less than 1,500,000,000.
 fn is_block_height(n: u32) -> bool { n < LOCK_TIME_THRESHOLD }
 
-/// Returns true if `n` is a UNIX timestamp i.e., greater than or equal to 500,000,000.
+/// Returns true if `n` is a UNIX timestamp i.e., greater than or equal to 1,500,000,000.
 fn is_block_time(n: u32) -> bool { n >= LOCK_TIME_THRESHOLD }
 
 /// Catchall type for errors that relate to time locks.
@@ -818,6 +818,7 @@ impl From<ConversionError> for ParseError {
 
 #[cfg(test)]
 mod tests {
+    // TODO: actualize tests
     use super::*;
 
     #[test]
