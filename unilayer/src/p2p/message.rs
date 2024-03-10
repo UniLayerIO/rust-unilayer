@@ -28,7 +28,7 @@ pub const MAX_INV_SIZE: usize = 50_000;
 
 /// Maximum size, in bytes, of an encoded message
 /// This by neccessity should be larger tham `MAX_VEC_SIZE`
-pub const MAX_MSG_SIZE: usize = 5_000_000;
+pub const MAX_MSG_SIZE: usize = 7_500_000;
 
 /// Serializer for command string
 #[derive(PartialEq, Eq, Clone, Debug)]
