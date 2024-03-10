@@ -29,8 +29,7 @@ Supports (or should support)
 * PSBT v0 de/serialization and all but the Input Finalizer role. Use [rust-miniscript](https://docs.rs/miniscript/latest/miniscript/psbt/index.html) to finalize.
 
 For JSONRPC interaction with UniLayer Network Core, it is recommended to use
-[rust-bitcoincore-rpc](https://github.com/rust-bitcoin/rust-bitcoincore-rpc). 
-Note: specific rust-unilayercore-rpc implementation will be published later.
+[rust-ulrcore-rpc](https://github.com/UniLayerIO/rust-ulrcore-rpc). 
 
 It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev) to verify the
 trustworthiness of each of your dependencies, including this one.
