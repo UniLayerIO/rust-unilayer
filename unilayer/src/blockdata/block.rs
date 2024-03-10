@@ -12,6 +12,7 @@ use core::fmt;
 
 use hashes::{sha256d, Hash, HashEngine};
 use io::{BufRead, Write};
+use units::Amount;
 
 use super::Weight;
 use crate::blockdata::script;
@@ -31,10 +32,16 @@ hashes::hash_newtype! {
     pub struct WitnessMerkleNode(sha256d::Hash);
     /// A hash corresponding to the witness structure commitment in the coinbase transaction.
     pub struct WitnessCommitment(sha256d::Hash);
+    /// A hashed corresponding to an EVM's Trie State root.
+    pub struct BlockStateRoot(sha256d::Hash);
+    /// A hashed corresponding to a Global Execution Storage of EVM related UTXO transaction.
+    pub struct BlockUTXORoot(sha256d::Hash);
 }
 impl_hashencode!(BlockHash);
 impl_hashencode!(TxMerkleNode);
 impl_hashencode!(WitnessMerkleNode);
+impl_hashencode!(BlockStateRoot);
+impl_hashencode!(BlockUTXORoot);
 
 impl From<Txid> for TxMerkleNode {
     fn from(txid: Txid) -> Self { Self::from_byte_array(txid.to_byte_array()) }
@@ -71,15 +78,20 @@ pub struct Header {
     pub bits: CompactTarget,
     /// The nonce, selected to obtain a low enough blockhash.
     pub nonce: u32,
+    /// Hash the the EVM Trie State after the block transactions execution.
+    pub hash_state_root: BlockStateRoot,
+    /// Hash the the EVM and non-EVM transactions.
+    pub hash_utxo_root: BlockUTXORoot,
+    /// Total block fees divided by gas price at that height (not including EVM gas consumption).
+    pub gas_used: Amount,
 }
-// TODO: add fields
 
-impl_consensus_encoding!(Header, version, prev_blockhash, merkle_root, time, bits, nonce);
+impl_consensus_encoding!(Header, version, prev_blockhash, merkle_root, time, bits, nonce, hash_state_root, hash_utxo_root, gas_used);
 
 impl Header {
     /// The number of bytes that the block header contributes to the size of a block.
-    // Serialized length of fields (version, prev_blockhash, merkle_root, time, bits, nonce)
-    pub const SIZE: usize = 4 + 32 + 32 + 4 + 4 + 4; // 80 // TODO: update
+    // Serialized length of fields (version, prev_blockhash, merkle_root, time, bits, nonce, hash_state_root, hash_utxo_root, gas_used)
+    pub const SIZE: usize = 4 + 32 + 32 + 4 + 4 + 4 + 32 + 32 + 8; // 152 // TODO: amount size is dinamic, we need to calculate it more precise
 
     /// Returns the block hash.
     pub fn block_hash(&self) -> BlockHash {
@@ -128,6 +140,9 @@ impl fmt::Debug for Header {
             .field("time", &self.time)
             .field("bits", &self.bits)
             .field("nonce", &self.nonce)
+            .field("hash_state_root", &self.hash_state_root)
+            .field("hash_utxo_root", &self.hash_utxo_root)
+            .field("gas_used", &self.gas_used)
             .finish()
     }
 }
@@ -155,7 +170,8 @@ impl Version {
     pub const ONE: Self = Self(1);
 
     /// BIP-34 Block v2.
-    pub const TWO: Self = Self(2);
+    /// UniLayer Network uses version 8 for basic block
+    pub const TWO: Self = Self(8);
 
     /// BIP-9 compatible version number that does not signal for any softforks.
     pub const NO_SOFT_FORK_SIGNALLING: Self = Self(Self::USE_VERSION_BITS as i32);

@@ -11,7 +11,7 @@ use hashes::{sha256d, Hash};
 use hex_lit::hex;
 use internals::impl_array_newtype;
 
-use crate::blockdata::block::{self, Block};
+use crate::blockdata::block::{self, Block, BlockStateRoot};
 use crate::blockdata::locktime::absolute;
 use crate::blockdata::opcodes::all::*;
 use crate::blockdata::script;
@@ -120,6 +120,11 @@ pub fn genesis_block(network: Network) -> Block {
                 time: 1638961350,
                 bits: CompactTarget::from_consensus(0x1E0FFFF0),
                 nonce: 607505,
+                // TODO: ensure endian of the value
+                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                // TODO: ensure that RLP from empty value is producing exactly all zeroes
+                hash_utxo_root: Hash::all_zeros(),
+                gas_used: Amount::ZERO,
             },
             txdata,
         },
@@ -131,6 +136,11 @@ pub fn genesis_block(network: Network) -> Block {
                 time: 1504695028,
                 bits: CompactTarget::from_consensus(0x1f00ffff),
                 nonce: 8026361,
+                // TODO: ensure endian of the value
+                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                // TODO: ensure that RLP from empty value is producing exactly all zeroes
+                hash_utxo_root: Hash::all_zeros(),
+                gas_used: Amount::ZERO,
             },
             txdata,
         },
@@ -142,6 +152,11 @@ pub fn genesis_block(network: Network) -> Block {
                 time: 1598918400,
                 bits: CompactTarget::from_consensus(0x1e0377ae),
                 nonce: 52613770,
+                // TODO: ensure endian of the value
+                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                // TODO: ensure that RLP from empty value is producing exactly all zeroes
+                hash_utxo_root: Hash::all_zeros(),
+                gas_used: Amount::ZERO,
             },
             txdata,
         },
@@ -153,6 +168,11 @@ pub fn genesis_block(network: Network) -> Block {
                 time: 1504695029,
                 bits: CompactTarget::from_consensus(0x1f00ffff),
                 nonce: 8026361,
+                // TODO: ensure endian of the value
+                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                // TODO: ensure that RLP from empty value is producing exactly all zeroes
+                hash_utxo_root: Hash::all_zeros(),
+                gas_used: Amount::ZERO,
             },
             txdata,
         },

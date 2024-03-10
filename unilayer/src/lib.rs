@@ -120,7 +120,7 @@ pub use crate::{
     amount::{Amount, Denomination, SignedAmount},
     bip158::{FilterHash, FilterHeader},
     bip32::XKeyIdentifier,
-    blockdata::block::{self, Block, BlockHash, TxMerkleNode, WitnessMerkleNode, WitnessCommitment},
+    blockdata::block::{self, Block, BlockHash, TxMerkleNode, BlockStateRoot, BlockUTXORoot, WitnessMerkleNode, WitnessCommitment},
     blockdata::constants,
     blockdata::fee_rate::FeeRate,
     blockdata::locktime::{self, absolute, relative},

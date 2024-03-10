@@ -23,7 +23,7 @@ use io::{Cursor, BufRead, Read, Write};
 
 use crate::bip152::{PrefilledTransaction, ShortId};
 use crate::bip158::{FilterHash, FilterHeader};
-use crate::blockdata::block::{self, BlockHash, TxMerkleNode};
+use crate::blockdata::block::{self, BlockHash, TxMerkleNode, BlockStateRoot, BlockUTXORoot};
 use crate::blockdata::transaction::{Transaction, TxIn, TxOut, MNVote, ValidatorVote, ValidatorRegister};
 #[cfg(feature = "std")]
 use crate::p2p::{
@@ -820,6 +820,8 @@ impl_vec!(block::Header);
 impl_vec!(FilterHash);
 impl_vec!(FilterHeader);
 impl_vec!(TxMerkleNode);
+impl_vec!(BlockStateRoot);
+impl_vec!(BlockUTXORoot);
 impl_vec!(Transaction);
 impl_vec!(TxOut);
 impl_vec!(TxIn);
@@ -1329,6 +1331,8 @@ mod tests {
         test_len_is_max_vec::<BlockHash>();
         test_len_is_max_vec::<FilterHash>();
         test_len_is_max_vec::<TxMerkleNode>();
+        test_len_is_max_vec::<BlockStateRoot>();
+        test_len_is_max_vec::<BlockUTXORoot>();
         test_len_is_max_vec::<Transaction>();
         test_len_is_max_vec::<TxOut>();
         test_len_is_max_vec::<TxIn>();

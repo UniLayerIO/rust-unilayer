@@ -375,7 +375,7 @@ mod test {
     use hex::FromHex;
 
     use super::*;
-    use crate::blockdata::block::TxMerkleNode;
+    use crate::blockdata::block::{TxMerkleNode, BlockStateRoot, BlockUTXORoot};
     use crate::blockdata::locktime::absolute;
     use crate::blockdata::transaction;
     use crate::consensus::encode::{deserialize, serialize};
@@ -410,6 +410,9 @@ mod test {
                 time: 2,
                 bits: CompactTarget::from_consensus(3),
                 nonce: 4,
+                hash_state_root: BlockStateRoot::hash(&[0]),
+                hash_utxo_root: BlockUTXORoot::hash(&[0]),
+                gas_used: Amount::ZERO,
             },
             txdata: vec![dummy_tx(&[2]), dummy_tx(&[3]), dummy_tx(&[4])],
         }
