@@ -5,9 +5,8 @@
 //! This module mainly introduces the [Amount] and [SignedAmount] types.
 //! We refer to the documentation on the types for more information.
 //! Important:
-//! while original functions name remain unchanged in order for easier
-//! switch to UniLayer's implementation, it is important to keep in mind that
-//! btc in the names of functions here are actually stand for ulr. 
+//! In order to avoid any confusion every btc mention was changed to ulr.
+//! If that'll create a problem for developers, we may create series with aliases.
 
 use core::cmp::Ordering;
 use core::fmt;
@@ -897,8 +896,8 @@ impl Amount {
 
     /// Convert from a value expressing ULRs to an [Amount].
     #[cfg(feature = "alloc")]
-    pub fn from_ulr(btc: f64) -> Result<Amount, ParseAmountError> {
-        Amount::from_float_in(btc, Denomination::ULR)
+    pub fn from_ulr(ulr: f64) -> Result<Amount, ParseAmountError> {
+        Amount::from_float_in(ulr, Denomination::ULR)
     }
 
     /// Convert from a value expressing integer values of ULRs to an [Amount]
@@ -916,7 +915,7 @@ impl Amount {
                 #[allow(unconditional_panic)]
                 #[allow(clippy::let_unit_value)]
                 #[allow(clippy::out_of_bounds_indexing)]
-                let _int_overflow_converting_btc_to_sats = [(); 2][1];
+                let _int_overflow_converting_ulr_to_sats = [(); 2][1];
                 Amount(0)
             }
         }
@@ -1282,8 +1281,8 @@ impl SignedAmount {
 
     /// Convert from a value expressing ULRs to an [SignedAmount].
     #[cfg(feature = "alloc")]
-    pub fn from_ulr(btc: f64) -> Result<SignedAmount, ParseAmountError> {
-        SignedAmount::from_float_in(btc, Denomination::ULR)
+    pub fn from_ulr(ulr: f64) -> Result<SignedAmount, ParseAmountError> {
+        SignedAmount::from_float_in(ulr, Denomination::ULR)
     }
 
     /// Parse a decimal string as a value in the given denomination.
@@ -1644,7 +1643,7 @@ pub mod serde {
     //!
     //! #[derive(Serialize, Deserialize)]
     //! pub struct HasAmount {
-    //!     #[serde(with = "unilayer_units::amount::serde::as_btc")]
+    //!     #[serde(with = "unilayer_units::amount::serde::as_ulr")]
     //!     pub amount: Amount,
     //! }
     //! ```
@@ -1662,9 +1661,9 @@ pub mod serde {
         fn ser_sat<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
         fn des_sat<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error>;
         #[cfg(feature = "alloc")]
-        fn ser_btc<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
+        fn ser_ulr<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
         #[cfg(feature = "alloc")]
-        fn des_btc<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error>;
+        fn des_ulr<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error>;
     }
 
     mod private {
@@ -1677,7 +1676,7 @@ pub mod serde {
         fn type_prefix(_: private::Token) -> &'static str;
         fn ser_sat_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
         #[cfg(feature = "alloc")]
-        fn ser_btc_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
+        fn ser_ulr_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error>;
     }
 
     struct DisplayFullError(ParseAmountError);
@@ -1713,11 +1712,11 @@ pub mod serde {
             Ok(Amount::from_sat(u128::deserialize(d)?))
         }
         #[cfg(feature = "alloc")]
-        fn ser_btc<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
+        fn ser_ulr<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
             f64::serialize(&self.to_float_in(Denomination::ULR), s)
         }
         #[cfg(feature = "alloc")]
-        fn des_btc<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
+        fn des_ulr<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
             use serde::de::Error;
             Amount::from_ulr(f64::deserialize(d)?)
                 .map_err(DisplayFullError)
@@ -1731,7 +1730,7 @@ pub mod serde {
             s.serialize_some(&self.to_sat())
         }
         #[cfg(feature = "alloc")]
-        fn ser_btc_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
+        fn ser_ulr_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
             s.serialize_some(&self.to_ulr())
         }
     }
@@ -1745,11 +1744,11 @@ pub mod serde {
             Ok(SignedAmount::from_sat(i128::deserialize(d)?))
         }
         #[cfg(feature = "alloc")]
-        fn ser_btc<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
+        fn ser_ulr<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
             f64::serialize(&self.to_float_in(Denomination::ULR), s)
         }
         #[cfg(feature = "alloc")]
-        fn des_btc<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
+        fn des_ulr<'d, D: Deserializer<'d>>(d: D, _: private::Token) -> Result<Self, D::Error> {
             use serde::de::Error;
             SignedAmount::from_ulr(f64::deserialize(d)?)
                 .map_err(DisplayFullError)
@@ -1763,7 +1762,7 @@ pub mod serde {
             s.serialize_some(&self.to_sat())
         }
         #[cfg(feature = "alloc")]
-        fn ser_btc_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
+        fn ser_ulr_opt<S: Serializer>(self, s: S, _: private::Token) -> Result<S::Ok, S::Error> {
             s.serialize_some(&self.to_ulr())
         }
     }
@@ -1840,9 +1839,9 @@ pub mod serde {
     }
 
     #[cfg(feature = "alloc")]
-    pub mod as_btc {
+    pub mod as_ulr {
         //! Serialize and deserialize [`Amount`](crate::Amount) as JSON numbers denominated in ULR.
-        //! Use with `#[serde(with = "amount::serde::as_btc")]`.
+        //! Use with `#[serde(with = "amount::serde::as_ulr")]`.
 
         use super::private;
 
@@ -1851,16 +1850,16 @@ pub mod serde {
         use crate::amount::serde::SerdeAmount;
 
         pub fn serialize<A: SerdeAmount, S: Serializer>(a: &A, s: S) -> Result<S::Ok, S::Error> {
-            a.ser_btc(s, private::Token)
+            a.ser_ulr(s, private::Token)
         }
 
         pub fn deserialize<'d, A: SerdeAmount, D: Deserializer<'d>>(d: D) -> Result<A, D::Error> {
-            A::des_btc(d, private::Token)
+            A::des_ulr(d, private::Token)
         }
 
         pub mod opt {
             //! Serialize and deserialize `Option<Amount>` as JSON numbers denominated in ULR.
-            //! Use with `#[serde(default, with = "amount::serde::as_btc::opt")]`.
+            //! Use with `#[serde(default, with = "amount::serde::as_ulr::opt")]`.
 
             use super::private;
             use core::fmt;
@@ -1875,7 +1874,7 @@ pub mod serde {
                 s: S,
             ) -> Result<S::Ok, S::Error> {
                 match *a {
-                    Some(a) => a.ser_btc_opt(s, private::Token),
+                    Some(a) => a.ser_ulr_opt(s, private::Token),
                     None => s.serialize_none(),
                 }
             }
@@ -1902,7 +1901,7 @@ pub mod serde {
                     where
                         D: Deserializer<'de>,
                     {
-                        Ok(Some(X::des_btc(d, private::Token)?))
+                        Ok(Some(X::des_ulr(d, private::Token)?))
                     }
                 }
                 d.deserialize_option(VisitOptAmt::<A>(PhantomData))
@@ -2222,14 +2221,14 @@ mod tests {
             Err(OutOfRangeError::too_big(true).into())
         );
 
-        let btc = move |f| SignedAmount::from_ulr(f).unwrap();
-        assert_eq!(btc(2.5).to_float_in(D::ULR), 2.5);
-        assert_eq!(btc(-2.5).to_float_in(D::MilliULR), -2500.0);
-        assert_eq!(btc(2.5).to_float_in(D::Satoshi), 250000000.0);
-        assert_eq!(btc(-2.5).to_float_in(D::MilliSatoshi), -250000000000.0);
+        let ulr = move |f| SignedAmount::from_ulr(f).unwrap();
+        assert_eq!(ulr(2.5).to_float_in(D::ULR), 2.5);
+        assert_eq!(ulr(-2.5).to_float_in(D::MilliULR), -2500.0);
+        assert_eq!(ulr(2.5).to_float_in(D::Satoshi), 250000000.0);
+        assert_eq!(ulr(-2.5).to_float_in(D::MilliSatoshi), -250000000000.0);
 
-        let btc = move |f| Amount::from_ulr(f).unwrap();
-        assert_eq!(&btc(0.0012).to_float_in(D::ULR).to_string(), "0.0012")
+        let ulr = move |f| Amount::from_ulr(f).unwrap();
+        assert_eq!(&ulr(0.0012).to_float_in(D::ULR).to_string(), "0.0012")
     }
 
     #[test]
@@ -2423,80 +2422,80 @@ mod tests {
 
     check_format_non_negative! {
         ULR;
-        btc_check_fmt_non_negative_0, 0, "{}", "0";
-        btc_check_fmt_non_negative_1, 0, "{:2}", " 0";
-        btc_check_fmt_non_negative_2, 0, "{:02}", "00";
-        btc_check_fmt_non_negative_3, 0, "{:.1}", "0.0";
-        btc_check_fmt_non_negative_4, 0, "{:4.1}", " 0.0";
-        btc_check_fmt_non_negative_5, 0, "{:04.1}", "00.0";
-        btc_check_fmt_non_negative_6, 1, "{}", "0.000000000000000001";
-        btc_check_fmt_non_negative_7, 1, "{:2}", "0.000000000000000001";
-        btc_check_fmt_non_negative_8, 1, "{:02}", "0.000000000000000001";
-        btc_check_fmt_non_negative_9, 1, "{:.1}", "0.000000000000000001";
-        btc_check_fmt_non_negative_10, 1, "{:11}", " 0.000000000000000001";
-        btc_check_fmt_non_negative_11, 1, "{:11.1}", " 0.000000000000000001";
-        btc_check_fmt_non_negative_12, 1, "{:011.1}", "00.000000000000000001";
-        btc_check_fmt_non_negative_13, 1, "{:.19}", "0.0000000000000000010";
-        btc_check_fmt_non_negative_14, 1, "{:11.19}", "0.0000000000000000010";
-        btc_check_fmt_non_negative_15, 1, "{:011.19}", "0.0000000000000000010";
-        btc_check_fmt_non_negative_16, 1, "{:12.19}", " 0.0000000000000000010";
-        btc_check_fmt_non_negative_17, 1, "{:012.19}", "00.0000000000000000010";
-        btc_check_fmt_non_negative_18, 1_000_000_000_000_000_000, "{}", "1";
-        btc_check_fmt_non_negative_19, 1_000_000_000_000_000_000, "{:2}", " 1";
-        btc_check_fmt_non_negative_20, 1_000_000_000_000_000_000, "{:02}", "01";
-        btc_check_fmt_non_negative_21, 1_000_000_000_000_000_000, "{:.1}", "1.0";
-        btc_check_fmt_non_negative_22, 1_000_000_000_000_000_000, "{:4.1}", " 1.0";
-        btc_check_fmt_non_negative_23, 1_000_000_000_000_000_000, "{:04.1}", "01.0";
-        btc_check_fmt_non_negative_24, 1_000_000_000_000_000_000, "{}", "1.1";
-        btc_check_fmt_non_negative_25, 1_000_000_010_000_000_000, "{}", "1.00000001";
-        btc_check_fmt_non_negative_26, 1_000_000_010_000_000_000, "{:1}", "1.00000001";
-        btc_check_fmt_non_negative_27, 1_000_000_010_000_000_000, "{:.1}", "1.00000001";
-        btc_check_fmt_non_negative_28, 1_000_000_010_000_000_000, "{:10}", "1.00000001";
-        btc_check_fmt_non_negative_29, 1_000_000_010_000_000_000, "{:11}", " 1.00000001";
-        btc_check_fmt_non_negative_30, 1_000_000_010_000_000_000, "{:011}", "01.00000001";
-        btc_check_fmt_non_negative_31, 1_000_000_010_000_000_000, "{:.8}", "1.00000001";
-        btc_check_fmt_non_negative_32, 1_000_000_010_000_000_000, "{:.9}", "1.000000010";
-        btc_check_fmt_non_negative_33, 1_000_000_010_000_000_000, "{:11.9}", "1.000000010";
-        btc_check_fmt_non_negative_34, 1_000_000_010_000_000_000, "{:12.9}", " 1.000000010";
-        btc_check_fmt_non_negative_35, 1_000_000_010_000_000_000, "{:012.9}", "01.000000010";
-        btc_check_fmt_non_negative_36, 1_000_000_010_000_000_000, "{:+011.8}", "+1.00000001";
-        btc_check_fmt_non_negative_37, 1_000_000_010_000_000_000, "{:+12.8}", " +1.00000001";
-        btc_check_fmt_non_negative_38, 1_000_000_010_000_000_000, "{:+012.8}", "+01.00000001";
-        btc_check_fmt_non_negative_39, 1_000_000_010_000_000_000, "{:+12.9}", "+1.000000010";
-        btc_check_fmt_non_negative_40, 1_000_000_010_000_000_000, "{:+012.9}", "+1.000000010";
-        btc_check_fmt_non_negative_41, 1_000_000_010_000_000_000, "{:+13.9}", " +1.000000010";
-        btc_check_fmt_non_negative_42, 1_000_000_010_000_000_000, "{:+013.9}", "+01.000000010";
-        btc_check_fmt_non_negative_43, 1_000_000_010_000_000_000, "{:<10}", "1.00000001";
-        btc_check_fmt_non_negative_44, 1_000_000_010_000_000_000, "{:<11}", "1.00000001 ";
-        btc_check_fmt_non_negative_45, 1_000_000_010_000_000_000, "{:<011}", "01.00000001";
-        btc_check_fmt_non_negative_46, 1_000_000_010_000_000_000, "{:<11.9}", "1.000000010";
-        btc_check_fmt_non_negative_47, 1_000_000_010_000_000_000, "{:<12.9}", "1.000000010 ";
-        btc_check_fmt_non_negative_48, 1_000_000_010_000_000_000, "{:<12}", "1.00000001  ";
-        btc_check_fmt_non_negative_49, 1_000_000_010_000_000_000, "{:^11}", "1.00000001 ";
-        btc_check_fmt_non_negative_50, 1_000_000_010_000_000_000, "{:^11.9}", "1.000000010";
-        btc_check_fmt_non_negative_51, 1_000_000_010_000_000_000, "{:^12.9}", "1.000000010 ";
-        btc_check_fmt_non_negative_52, 1_000_000_010_000_000_000, "{:^12}", " 1.00000001 ";
-        btc_check_fmt_non_negative_53, 1_000_000_010_000_000_000, "{:^12.9}", "1.000000010 ";
-        btc_check_fmt_non_negative_54, 1_000_000_010_000_000_000, "{:^13.9}", " 1.000000010 ";
+        ulr_check_fmt_non_negative_0, 0, "{}", "0";
+        ulr_check_fmt_non_negative_1, 0, "{:2}", " 0";
+        ulr_check_fmt_non_negative_2, 0, "{:02}", "00";
+        ulr_check_fmt_non_negative_3, 0, "{:.1}", "0.0";
+        ulr_check_fmt_non_negative_4, 0, "{:4.1}", " 0.0";
+        ulr_check_fmt_non_negative_5, 0, "{:04.1}", "00.0";
+        ulr_check_fmt_non_negative_6, 1, "{}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_7, 1, "{:2}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_8, 1, "{:02}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_9, 1, "{:.1}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_10, 1, "{:11}", " 0.000000000000000001";
+        ulr_check_fmt_non_negative_11, 1, "{:11.1}", " 0.000000000000000001";
+        ulr_check_fmt_non_negative_12, 1, "{:011.1}", "00.000000000000000001";
+        ulr_check_fmt_non_negative_13, 1, "{:.19}", "0.0000000000000000010";
+        ulr_check_fmt_non_negative_14, 1, "{:11.19}", "0.0000000000000000010";
+        ulr_check_fmt_non_negative_15, 1, "{:011.19}", "0.0000000000000000010";
+        ulr_check_fmt_non_negative_16, 1, "{:12.19}", " 0.0000000000000000010";
+        ulr_check_fmt_non_negative_17, 1, "{:012.19}", "00.0000000000000000010";
+        ulr_check_fmt_non_negative_18, 1_000_000_000_000_000_000, "{}", "1";
+        ulr_check_fmt_non_negative_19, 1_000_000_000_000_000_000, "{:2}", " 1";
+        ulr_check_fmt_non_negative_20, 1_000_000_000_000_000_000, "{:02}", "01";
+        ulr_check_fmt_non_negative_21, 1_000_000_000_000_000_000, "{:.1}", "1.0";
+        ulr_check_fmt_non_negative_22, 1_000_000_000_000_000_000, "{:4.1}", " 1.0";
+        ulr_check_fmt_non_negative_23, 1_000_000_000_000_000_000, "{:04.1}", "01.0";
+        ulr_check_fmt_non_negative_24, 1_000_000_000_000_000_000, "{}", "1.1";
+        ulr_check_fmt_non_negative_25, 1_000_000_010_000_000_000, "{}", "1.00000001";
+        ulr_check_fmt_non_negative_26, 1_000_000_010_000_000_000, "{:1}", "1.00000001";
+        ulr_check_fmt_non_negative_27, 1_000_000_010_000_000_000, "{:.1}", "1.00000001";
+        ulr_check_fmt_non_negative_28, 1_000_000_010_000_000_000, "{:10}", "1.00000001";
+        ulr_check_fmt_non_negative_29, 1_000_000_010_000_000_000, "{:11}", " 1.00000001";
+        ulr_check_fmt_non_negative_30, 1_000_000_010_000_000_000, "{:011}", "01.00000001";
+        ulr_check_fmt_non_negative_31, 1_000_000_010_000_000_000, "{:.8}", "1.00000001";
+        ulr_check_fmt_non_negative_32, 1_000_000_010_000_000_000, "{:.9}", "1.000000010";
+        ulr_check_fmt_non_negative_33, 1_000_000_010_000_000_000, "{:11.9}", "1.000000010";
+        ulr_check_fmt_non_negative_34, 1_000_000_010_000_000_000, "{:12.9}", " 1.000000010";
+        ulr_check_fmt_non_negative_35, 1_000_000_010_000_000_000, "{:012.9}", "01.000000010";
+        ulr_check_fmt_non_negative_36, 1_000_000_010_000_000_000, "{:+011.8}", "+1.00000001";
+        ulr_check_fmt_non_negative_37, 1_000_000_010_000_000_000, "{:+12.8}", " +1.00000001";
+        ulr_check_fmt_non_negative_38, 1_000_000_010_000_000_000, "{:+012.8}", "+01.00000001";
+        ulr_check_fmt_non_negative_39, 1_000_000_010_000_000_000, "{:+12.9}", "+1.000000010";
+        ulr_check_fmt_non_negative_40, 1_000_000_010_000_000_000, "{:+012.9}", "+1.000000010";
+        ulr_check_fmt_non_negative_41, 1_000_000_010_000_000_000, "{:+13.9}", " +1.000000010";
+        ulr_check_fmt_non_negative_42, 1_000_000_010_000_000_000, "{:+013.9}", "+01.000000010";
+        ulr_check_fmt_non_negative_43, 1_000_000_010_000_000_000, "{:<10}", "1.00000001";
+        ulr_check_fmt_non_negative_44, 1_000_000_010_000_000_000, "{:<11}", "1.00000001 ";
+        ulr_check_fmt_non_negative_45, 1_000_000_010_000_000_000, "{:<011}", "01.00000001";
+        ulr_check_fmt_non_negative_46, 1_000_000_010_000_000_000, "{:<11.9}", "1.000000010";
+        ulr_check_fmt_non_negative_47, 1_000_000_010_000_000_000, "{:<12.9}", "1.000000010 ";
+        ulr_check_fmt_non_negative_48, 1_000_000_010_000_000_000, "{:<12}", "1.00000001  ";
+        ulr_check_fmt_non_negative_49, 1_000_000_010_000_000_000, "{:^11}", "1.00000001 ";
+        ulr_check_fmt_non_negative_50, 1_000_000_010_000_000_000, "{:^11.9}", "1.000000010";
+        ulr_check_fmt_non_negative_51, 1_000_000_010_000_000_000, "{:^12.9}", "1.000000010 ";
+        ulr_check_fmt_non_negative_52, 1_000_000_010_000_000_000, "{:^12}", " 1.00000001 ";
+        ulr_check_fmt_non_negative_53, 1_000_000_010_000_000_000, "{:^12.9}", "1.000000010 ";
+        ulr_check_fmt_non_negative_54, 1_000_000_010_000_000_000, "{:^13.9}", " 1.000000010 ";
     }
 
     check_format_non_negative_show_denom! {
         ULR, " ULR";
-        btc_check_fmt_non_negative_show_denom_0, 1, "{:14.1}", "0.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_1, 1, "{:14.18}", "0.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_2, 1, "{:15}", " 0.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_3, 1, "{:015}", "00.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_4, 1, "{:.19}", "0.0000000000000000010";
-        btc_check_fmt_non_negative_show_denom_5, 1, "{:15.19}", "0.0000000000000000010";
-        btc_check_fmt_non_negative_show_denom_6, 1, "{:16.19}", " 0.0000000000000000010";
-        btc_check_fmt_non_negative_show_denom_7, 1, "{:016.19}", "00.0000000000000000010";
+        ulr_check_fmt_non_negative_show_denom_0, 1, "{:14.1}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_1, 1, "{:14.18}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_2, 1, "{:15}", " 0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_3, 1, "{:015}", "00.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_4, 1, "{:.19}", "0.0000000000000000010";
+        ulr_check_fmt_non_negative_show_denom_5, 1, "{:15.19}", "0.0000000000000000010";
+        ulr_check_fmt_non_negative_show_denom_6, 1, "{:16.19}", " 0.0000000000000000010";
+        ulr_check_fmt_non_negative_show_denom_7, 1, "{:016.19}", "00.0000000000000000010";
     }
 
     check_format_non_negative_show_denom! {
         ULR, " ULR ";
-        btc_check_fmt_non_negative_show_denom_align_0, 1, "{:<15}", "0.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_align_1, 1, "{:^15}", "0.000000000000000001";
-        btc_check_fmt_non_negative_show_denom_align_2, 1, "{:^16}", " 0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_align_0, 1, "{:<15}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_align_1, 1, "{:^15}", "0.000000000000000001";
+        ulr_check_fmt_non_negative_show_denom_align_2, 1, "{:^16}", " 0.000000000000000001";
     }
 
     check_format_non_negative! {
@@ -2738,14 +2737,14 @@ mod tests {
     #[cfg(feature = "alloc")]
     #[test]
     #[allow(clippy::inconsistent_digit_grouping)] // Group to show 100,000,000...0 sats per ULR.
-    fn serde_as_btc() {
+    fn serde_as_ulr() {
         use serde_json;
 
         #[derive(Serialize, Deserialize, PartialEq, Debug)]
         struct T {
-            #[serde(with = "crate::amount::serde::as_btc")]
+            #[serde(with = "crate::amount::serde::as_ulr")]
             pub amt: Amount,
-            #[serde(with = "crate::amount::serde::as_btc")]
+            #[serde(with = "crate::amount::serde::as_ulr")]
             pub samt: SignedAmount,
         }
 
@@ -2774,14 +2773,14 @@ mod tests {
     #[cfg(feature = "alloc")]
     #[test]
     #[allow(clippy::inconsistent_digit_grouping)] // Group to show 100,000,000 sats per ULR.
-    fn serde_as_btc_opt() {
+    fn serde_as_ulr_opt() {
         use serde_json;
 
         #[derive(Serialize, Deserialize, PartialEq, Debug, Eq)]
         struct T {
-            #[serde(default, with = "crate::amount::serde::as_btc::opt")]
+            #[serde(default, with = "crate::amount::serde::as_ulr::opt")]
             pub amt: Option<Amount>,
-            #[serde(default, with = "crate::amount::serde::as_btc::opt")]
+            #[serde(default, with = "crate::amount::serde::as_ulr::opt")]
             pub samt: Option<SignedAmount>,
         }
 
