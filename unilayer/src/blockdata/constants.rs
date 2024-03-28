@@ -34,7 +34,7 @@ pub const DIFFCHANGE_INTERVAL: u32 = 2016; // TODO: calculate more presice value
 pub const DIFFCHANGE_TIMESPAN: u32 = 14 * 24 * 3600; // TODO: calculate more presice values
 
 /// The factor that non-witness serialization data is multiplied by during weight calculation.
-pub const WITNESS_SCALE_FACTOR: usize = 4;
+pub const WITNESS_SCALE_FACTOR: usize = units::weight::WITNESS_SCALE_FACTOR;
 /// The maximum allowed number of signature check operations in a block.
 pub const MAX_BLOCK_SIGOPS_COST: i64 = 80_000;
 /// Mainnet (unilayer) pubkey address prefix.

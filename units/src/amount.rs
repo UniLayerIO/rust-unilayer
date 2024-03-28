@@ -888,6 +888,7 @@ impl Amount {
     /// The number of bytes that an amount contributes to the size of a transaction.
     // is determined by CompactSize function
 
+    // TODO: consider using from_aulr and to_aulr instead and use 1e-8 denomination for those functions for better compability
     /// Create an [Amount] with aulr precision and the given number of aulrs.
     pub const fn from_sat(aulr: u128) -> Amount { Amount(aulr) }
 
@@ -1099,8 +1100,15 @@ impl fmt::Debug for Amount {
 // Just using UniLayer denominated string.
 impl fmt::Display for Amount {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.fmt_value_in(f, Denomination::ULR)?;
-        write!(f, " {}", Denomination::ULR)
+        let a_ulr = self.to_sat();
+        let denomination = Denomination::ULR;
+        let mut format_options = FormatOptions::from_formatter(f);
+
+        if f.precision().is_none() && a_ulr.rem_euclid(Amount::ONE_ULR.to_sat()) != 0 {
+            format_options.precision = Some(8);
+        }
+
+        fmt_satoshi_in(a_ulr, false, f, denomination, true, format_options)
     }
 }
 
@@ -2532,7 +2540,7 @@ mod tests {
 
         use super::ParseAmountError as E;
 
-        assert_eq!(Amount::from_str("x ULR"), Err(E::from(E::from(InvalidCharacterError { invalid_char: 'x', position: 0 })).into()));
+        assert_eq!(Amount::from_str("x ULR"), Err(InvalidCharacterError { invalid_char: 'x', position: 0 }.into()));
         assert_eq!(
             Amount::from_str("xULR"),
             Err(Unknown(UnknownDenominationError("xULR".into())).into()),
@@ -2945,5 +2953,36 @@ mod tests {
                 Err(e) => panic!("unexpected error: {}", e),
             }
         }
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn trailing_zeros_for_amount() {
+        assert_eq!(format!("{}", Amount::ONE_AULR), "0.000000000000000001 ULR");
+        assert_eq!(format!("{}", Amount::ONE_ULR), "1 ULR");
+        assert_eq!(format!("{}", Amount::from_sat(1)), "0.000000000000000001 ULR");
+        assert_eq!(format!("{}", Amount::from_sat(10)), "0.000000000000000010 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(10)), "0.00000000000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(100)), "0.0000000000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(1000)), "0.000000000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(10_000)), "0.0000000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(100_000)), "0.000000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(1_000_000)), "0.00000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(10_000_000)), "0.0000000001 ULR");
+        assert_eq!(format!("{:.2}", Amount::from_sat(1_000_000_000_000_000_000)), "1.00 ULR");
+        assert_eq!(format!("{}", Amount::from_sat(1_000_000_000_000_000_000)), "1 ULR");
+        assert_eq!(format!("{}", Amount::from_sat(400_000_000_000_000_000_000)), "400 ULR");
+        assert_eq!(
+            format!("{:.10}", Amount::from_sat(1_000_000_000_000_000_000)),
+            "1.0000000000 ULR"
+        );
+        assert_eq!(
+            format!("{}", Amount::from_sat(4_000_000_000_000_000_010_000_000)),
+            "4000000.00000010 ULR"
+        );
+        assert_eq!(
+            format!("{}", Amount::from_sat(4_000_000_000_000_000_000_000_000)),
+            "4000000 ULR"
+        );
     }
 }

@@ -16,10 +16,11 @@ use core::{cmp, fmt, str};
 use hashes::{sha256d, Hash};
 use internals::write_err;
 use io::{BufRead, Write};
+use units::parse;
 
 use super::Weight;
 use crate::blockdata::locktime::absolute::{self, Height, Time};
-use crate::blockdata::locktime::relative;
+use crate::blockdata::locktime::relative::{self, TimeOverflowError};
 use crate::blockdata::script::{Script, ScriptBuf};
 use crate::blockdata::witness::Witness;
 use crate::blockdata::FeeRate;
@@ -28,7 +29,8 @@ use crate::error::{PrefixedHexError, UnprefixedHexError, ContainsPrefixError, Mi
 use crate::taproot::{Signature};
 use crate::taproot::serialized_signature::{self};
 use crate::internal_macros::{impl_consensus_encoding, impl_hashencode};
-use crate::parse::{self, impl_parse_str_from_int_infallible};
+#[cfg(doc)]
+use crate::sighash::{EcdsaSighashType, TapSighashType};
 use crate::{prelude::*, PublicKey};
 use crate::{Amount, SignedAmount, CompactSize};
 #[rustfmt::skip]                // Keep public re-exports separate.
@@ -172,7 +174,7 @@ fn parse_vout(s: &str) -> Result<u32, ParseOutPointError> {
             return Err(ParseOutPointError::VoutNotCanonical);
         }
     }
-    crate::parse::int(s).map_err(ParseOutPointError::Vout)
+    parse::int(s).map_err(ParseOutPointError::Vout)
 }
 
 impl core::str::FromStr for OutPoint {
@@ -449,11 +451,11 @@ impl Sequence {
     ///
     /// Will return an error if the input cannot be encoded in 16 bits.
     #[inline]
-    pub fn from_seconds_floor(seconds: u32) -> Result<Self, relative::Error> {
+    pub fn from_seconds_floor(seconds: u32) -> Result<Self, TimeOverflowError> {
         if let Ok(interval) = u16::try_from(seconds / 512) {
             Ok(Sequence::from_512_second_intervals(interval))
         } else {
-            Err(relative::Error::IntegerOverflow(seconds))
+            Err(TimeOverflowError::new(seconds))
         }
     }
 
@@ -462,11 +464,11 @@ impl Sequence {
     ///
     /// Will return an error if the input cannot be encoded in 16 bits.
     #[inline]
-    pub fn from_seconds_ceil(seconds: u32) -> Result<Self, relative::Error> {
+    pub fn from_seconds_ceil(seconds: u32) -> Result<Self, TimeOverflowError> {
         if let Ok(interval) = u16::try_from((seconds + 511) / 512) {
             Ok(Sequence::from_512_second_intervals(interval))
         } else {
-            Err(relative::Error::IntegerOverflow(seconds))
+            Err(TimeOverflowError::new(seconds))
         }
     }
 
@@ -530,7 +532,7 @@ impl fmt::Debug for Sequence {
     }
 }
 
-impl_parse_str_from_int_infallible!(Sequence, u32, from_consensus);
+units::impl_parse_str_from_int_infallible!(Sequence, u32, from_consensus);
 
 /// UniLayer transaction output.
 ///
@@ -2004,7 +2006,7 @@ mod tests {
             OutPoint::from_str(
                 "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456:lol"
             ),
-            Err(ParseOutPointError::Vout(crate::parse::int::<u32, _>("lol").unwrap_err()))
+            Err(ParseOutPointError::Vout(parse::int::<u32, _>("lol").unwrap_err()))
         );
 
         assert_eq!(
@@ -2261,6 +2263,10 @@ mod tests {
         assert_eq!(
             format!("{:x}", tx.compute_txid()),
             "9652aa62b0e748caeec40c4cb7bc17c6792435cc3dfe447dd1ca24f912a1c6ec"
+        );
+        assert_eq!(
+            format!("{:.10x}", tx.compute_txid()),
+            "9652aa62b0"
         );
         assert_eq!(tx.weight(), Weight::from_wu(2718));
 
@@ -2748,6 +2754,30 @@ mod tests {
     fn sequence_debug_output() {
         let seq = Sequence::from_seconds_floor(1000);
         println!("{:?}", seq)
+    }
+
+    // TODO: update for VarInt and u128
+    #[test]
+    fn outpoint_format() {
+        let outpoint = OutPoint::default();
+
+        let debug = "OutPoint { txid: 0000000000000000000000000000000000000000000000000000000000000000, vout: 4294967295 }";
+        assert_eq!(debug, format!("{:?}", &outpoint));
+
+        let display = "0000000000000000000000000000000000000000000000000000000000000000:4294967295";
+        assert_eq!(display, format!("{}", &outpoint));
+
+        let pretty_debug = "OutPoint {\n    txid: 0000000000000000000000000000000000000000000000000000000000000000,\n    vout: 4294967295,\n}";
+        assert_eq!(pretty_debug, format!("{:#?}", &outpoint));
+
+        let debug_txid = "0000000000000000000000000000000000000000000000000000000000000000";
+        assert_eq!(debug_txid, format!("{:?}", &outpoint.txid));
+
+        let display_txid = "0000000000000000000000000000000000000000000000000000000000000000";
+        assert_eq!(display_txid, format!("{}", &outpoint.txid));
+
+        let pretty_txid = "0x0000000000000000000000000000000000000000000000000000000000000000";
+        assert_eq!(pretty_txid, format!("{:#}", &outpoint.txid));
     }
 }
 

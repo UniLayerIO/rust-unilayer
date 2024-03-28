@@ -89,7 +89,6 @@ extern crate actual_serde as serde;
 #[macro_use]
 mod test_macros;
 mod internal_macros;
-mod parse;
 #[cfg(feature = "serde")]
 mod serde_utils;
 
@@ -186,14 +185,20 @@ pub mod amount {
     impl Decodable for Amount {
         #[inline]
         fn consensus_decode<R: BufRead + ?Sized>(r: &mut R) -> Result<Self, encode::Error> {
-            Ok(Amount::from_sat(Decodable::consensus_decode(r)?))
+            Ok(Amount::from_sat(encode::VarInt128::consensus_decode(r)?.0))
         }
     }
 
     impl Encodable for Amount {
         #[inline]
         fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> Result<usize, io::Error> {
-            self.to_sat().consensus_encode(w)
+            encode::VarInt128::from(self.to_sat()).consensus_encode(w)
         }
     }
+}
+
+/// Unit parsing utilities.
+pub mod parse {
+    /// Re-export everything from the [`units::parse`] module.
+    pub use units::parse::ParseIntError;
 }
