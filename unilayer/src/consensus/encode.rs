@@ -18,6 +18,7 @@
 use core::{fmt, mem, u32};
 
 use hashes::{sha256, sha256d, Hash};
+use hex::error::{InvalidCharError, OddLengthStringError};
 use internals::write_err;
 use io::{Cursor, BufRead, Read, Write};
 
@@ -25,6 +26,7 @@ use crate::bip152::{PrefilledTransaction, ShortId};
 use crate::bip158::{FilterHash, FilterHeader};
 use crate::blockdata::block::{self, BlockHash, TxMerkleNode, BlockStateRoot, BlockUTXORoot};
 use crate::blockdata::transaction::{Transaction, TxIn, TxOut, MNVote, ValidatorVote, ValidatorRegister};
+use crate::consensus::{DecodeError, IterReader};
 #[cfg(feature = "std")]
 use crate::p2p::{
     address::{AddrV2Message, Address},
@@ -105,6 +107,44 @@ impl From<io::Error> for Error {
     fn from(error: io::Error) -> Self { Error::Io(error) }
 }
 
+/// Hex deserialization error.
+#[derive(Debug)]
+pub enum FromHexError {
+    /// Purported hex string had odd length.
+    OddLengthString(OddLengthStringError),
+    /// Decoding error.
+    Decode(DecodeError<InvalidCharError>)
+}
+
+impl fmt::Display for FromHexError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use FromHexError::*;
+
+        match *self {
+            OddLengthString(ref e) =>
+                write_err!(f, "odd length, failed to create bytes from hex"; e),
+            Decode(ref e) => write_err!(f, "decoding error"; e),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for FromHexError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        use FromHexError::*;
+
+        match *self {
+            OddLengthString(ref e) => Some(e),
+            Decode(ref e) => Some(e),
+        }
+    }
+}
+
+impl From<OddLengthStringError> for FromHexError {
+    #[inline]
+    fn from(e: OddLengthStringError) -> Self { Self::OddLengthString(e) }
+}
+
 /// Encodes an object into a vector.
 pub fn serialize<T: Encodable + ?Sized>(data: &T) -> Vec<u8> {
     let mut encoder = Vec::new();
@@ -129,6 +169,14 @@ pub fn deserialize<T: Decodable>(data: &[u8]) -> Result<T, Error> {
     } else {
         Err(Error::ParseFailed("data not consumed entirely when explicitly deserializing"))
     }
+}
+
+/// Deserialize any decodable type from a hex string, will error if said deserialization
+/// doesn't consume the entire vector.
+pub fn deserialize_hex<T: Decodable>(hex: &str) -> Result<T, FromHexError> {
+    let iter = hex::HexSliceToBytesIter::new(hex)?;
+    let reader = IterReader::new(iter);
+    Ok(reader.decode().map_err(FromHexError::Decode)?)
 }
 
 /// Deserializes an object from a vector, but will not report an error if said deserialization
@@ -263,7 +311,7 @@ impl<R: Read + ?Sized> ReadExt for R {
 
 // TODO: this value would be increased with 2-level mempool for big transactions will be introduced
 /// Maximum size, in bytes, of a vector we are allowed to decode.
-pub const MAX_VEC_SIZE: usize = 1_500_000;
+pub const MAX_VEC_SIZE: usize = 4_000_000;
 
 /// Data which can be encoded in a consensus-consistent way.
 pub trait Encodable {
@@ -337,6 +385,10 @@ pub struct CompactSize(pub u64);
 /// A variable-length unsigned integer.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct VarInt(pub u64);
+
+/// A variable-length for Amount.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+pub struct VarInt128(pub u128);
 
 /// Data and a 4-byte checksum.
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -581,16 +633,16 @@ impl_var_int_from!(u8, u16, u32, u64, usize);
 // TODO: Add tests
 const MAX_U128_SIZE: usize = 16;
 
-impl Encodable for u128 {
+impl Encodable for VarInt128 {
     #[inline]
     fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> Result<usize, io::Error> {
-        if *self == 0 {
+        if self.0 == 0 {
             w.emit_u8(0)?;
             return Ok(1 as usize);
         }
 
-        let mut high = (*self >> 64) as u64;
-        let mut low = *self as u64;
+        let mut high = (self.0 >> 64) as u64;
+        let mut low = self.0 as u64;
 
         let mut tmp = [0u8; MAX_U128_SIZE];
         let mut len = 0;
@@ -625,12 +677,12 @@ impl Encodable for u128 {
     }
 }
 
-impl Decodable for u128 {
+impl Decodable for VarInt128 {
     #[inline]
-    fn consensus_decode<R: BufRead + ?Sized>(r: &mut R) -> Result<u128, Error> {
+    fn consensus_decode<R: BufRead + ?Sized>(r: &mut R) -> Result<Self, Error> {
         let size = ReadExt::read_u8(r)? as usize;
         if size == 0 {
-            return Ok(0u128);
+            return Ok(VarInt128::from(0u128));
         }
 
         let mut high: u64 = 0;
@@ -668,9 +720,22 @@ impl Decodable for u128 {
             }
         }
 
-        Ok((high as u128) << 64 ^ (low as u128))
+        Ok(VarInt128::from((high as u128) << 64 ^ (low as u128)))
     }
 }
+
+/// Implements `From<T> for VarInt128`.
+macro_rules! impl_var_int_from {
+    ($($ty:tt),*) => {
+        $(
+            /// Creates a `VarInt128` from a `usize` by casting the to a `u128`.
+            impl From<$ty> for VarInt128 {
+                fn from(x: $ty) -> Self { VarInt128(x as u128) }
+            }
+        )*
+    }
+}
+impl_var_int_from!(u128, i128);
 
 impl Encodable for bool {
     #[inline]
@@ -1437,5 +1502,20 @@ mod tests {
                 data
             );
         }
+    }
+
+    #[test]
+    fn deserialize_tx_hex() {
+        let hex = include_str!("../../tests/data/previous_tx_0_hex"); // An arbitrary transaction.
+        assert!(deserialize_hex::<Transaction>(hex).is_ok())
+    }
+
+    #[test]
+    fn deserialize_tx_hex_too_many_bytes() {
+        use crate::consensus::DecodeError;
+
+        let mut hex = include_str!("../../tests/data/previous_tx_0_hex").to_string(); // An arbitrary transaction.
+        hex.push_str("abcdef");
+        assert!(matches!(deserialize_hex::<Transaction>(&hex).unwrap_err(), FromHexError::Decode(DecodeError::TooManyBytes)));
     }
 }

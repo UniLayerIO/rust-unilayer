@@ -1,6 +1,6 @@
 [package]
 name = "unilayer-io"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Matt Corallo <birchneutea@mattcorallo.com>"]
 license = "CC0-1.0"
 repository = "https://github.com/UniLayerTeam/rust-unilayer"

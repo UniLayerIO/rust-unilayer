@@ -9,12 +9,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 
 [[package]]
-name = "base58check"
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+
+[[package]]
+name = "base58ck"
 version = "0.1.0"
 dependencies = [
  "unilayer-internals",
- "unilayer_hashes",
- "hex-conservative",
+ "unilayer_hashes 0.14.0",
+ "hex-conservative 0.2.0",
 ]
 
 [[package]]
@@ -42,16 +48,16 @@ dependencies = [
 name = "unilayer"
 version = "0.31.0"
 dependencies = [
- "base58check",
+ "base58ck",
  "base64",
  "bech32",
  "bincode",
  "unilayer-internals",
  "unilayer-io",
  "unilayer-units",
- "unilayer_hashes",
+ "unilayer_hashes 0.14.0",
  "bitcoinconsensus",
- "hex-conservative",
+ "hex-conservative 0.2.0",
  "hex_lit",
  "mutagen",
  "ordered",
@@ -81,7 +87,7 @@ dependencies = [
 
 [[package]]
 name = "unilayer-io"
-version = "0.1.1"
+version = "0.1.2"
 
 [[package]]
 name = "unilayer-units"
@@ -96,9 +102,19 @@ dependencies = [
 [[package]]
 name = "unilayer_hashes"
 version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1930a4dabfebb8d7d9992db18ebe3ae2876f0a305fab206fd168df931ede293b"
+dependencies = [
+ "bitcoin-internals",
+ "hex-conservative 0.1.1",
+]
+
+[[package]]
+name = "unilayer_hashes"
+version = "0.14.0"
 dependencies = [
  "unilayer-io",
- "hex-conservative",
+ "hex-conservative 0.2.0",
  "schemars",
  "serde",
  "serde_json",
@@ -107,12 +123,11 @@ dependencies = [
 
 [[package]]
 name = "bitcoinconsensus"
-version = "0.20.2-0.5.0"
+version = "0.105.0+25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54505558b77e0aa21b2491a7b39cbae9db22ac8b1bc543ef4600edb762306f9c"
+checksum = "f260ac8fb2c621329013fc0ed371c940fcc512552dcbcb9095ed0179098c9e18"
 dependencies = [
  "cc",
- "libc",
 ]
 
 [[package]]
@@ -161,6 +176,15 @@ name = "hex-conservative"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30ed443af458ccb6d81c1e7e661545f94d3176752fb1df2f543b902a1e0f51e2"
+
+[[package]]
+name = "hex-conservative"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1aa273bf451e37ed35ced41c71a5e2a4e29064afb104158f2514bcd71c2c986"
+dependencies = [
+ "arrayvec",
+]
 
 [[package]]
 name = "hex_lit"
@@ -337,7 +361,7 @@ version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2acea373acb8c21ecb5a23741452acd2593ed44ee3d343e72baaa143bc89d0d5"
 dependencies = [
- "unilayer_hashes",
+ "unilayer_hashes 0.13.0",
  "rand",
  "secp256k1-sys",
  "serde",
