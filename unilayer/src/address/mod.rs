@@ -820,7 +820,7 @@ mod tests {
     use hex_lit::hex;
 
     use super::*;
-    use crate::network::Network::{UniLayer, Testnet};
+    use crate::network::Network::{Testnet, UniLayer};
 
     fn roundtrips(addr: &Address, network: Network) {
         assert_eq!(

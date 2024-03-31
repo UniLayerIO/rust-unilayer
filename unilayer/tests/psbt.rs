@@ -195,7 +195,7 @@ fn create_transaction() -> Transaction {
         ],
         validator_register: vec![],
         validator_vote: vec![],
-        gas_price: Amount::ZERO
+        gas_price: Amount::ZERO,
     }
 }
 

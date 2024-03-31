@@ -7,6 +7,8 @@
 //! single transaction.
 //!
 
+use std::str::FromStr;
+
 use hashes::{sha256d, Hash};
 use hex_lit::hex;
 use internals::impl_array_newtype;
@@ -22,9 +24,7 @@ use crate::internal_macros::impl_bytes_newtype;
 use crate::network::Network;
 use crate::pow::CompactTarget;
 use crate::transaction::ValidatorRegister;
-use crate::Amount;
-use crate::PublicKey;
-use std::str::FromStr;
+use crate::{Amount, PublicKey};
 
 /// How many seconds between blocks we expect on average.
 pub const TARGET_BLOCK_SPACING: u32 = 15;
@@ -45,8 +45,8 @@ pub const SCRIPT_ADDRESS_PREFIX_MAIN: u8 = 20; // 0x14
 pub const PUBKEY_ADDRESS_PREFIX_TEST: u8 = 84; // 0x54
 /// Test (tesnet, signet, regtest) script address prefix.
 pub const SCRIPT_ADDRESS_PREFIX_TEST: u8 = 40; // 0x28
-// PUBKEY_ADDRESS_PREFIX_REGTEST: u8 = 82; // 0x52
-// SCRIPT_ADDRESS_PREFIX_REGTEST: u8 = 60; // 0x3C
+                                               // PUBKEY_ADDRESS_PREFIX_REGTEST: u8 = 82; // 0x52
+                                               // SCRIPT_ADDRESS_PREFIX_REGTEST: u8 = 60; // 0x3C
 /// The maximum allowed script size.
 pub const MAX_SCRIPT_ELEMENT_SIZE: usize = 129_000;
 /// How may blocks between halvings.
@@ -66,7 +66,7 @@ fn bitcoin_genesis_tx() -> Transaction {
         output: vec![],
         validator_register: vec![],
         validator_vote: vec![],
-        gas_price: Amount::ZERO
+        gas_price: Amount::ZERO,
     };
 
     // Inputs
@@ -81,26 +81,32 @@ fn bitcoin_genesis_tx() -> Transaction {
         sequence: Sequence::MAX,
         witness: Witness::default(),
     });
-    
-    ret.validator_register.push(ValidatorRegister{
-        public_key: PublicKey::from_str("02f10964b5084147d013e63108c9df67b8cbe1c6402b1948c849dd51a8dcca9e9f").unwrap(),
+
+    ret.validator_register.push(ValidatorRegister {
+        public_key: PublicKey::from_str(
+            "02f10964b5084147d013e63108c9df67b8cbe1c6402b1948c849dd51a8dcca9e9f",
+        )
+        .unwrap(),
         // TODO: for the testnet it is "028d13c338d470038e7a9183cf64c11681ba916a99b0261be14449c4c004f157ce"
         // it is important to sapport all these values versions
         vin: TxIn {
-            previous_output: OutPoint{txid: Hash::all_zeros(), vout: 0},
+            previous_output: OutPoint { txid: Hash::all_zeros(), vout: 0 },
             script_sig: script::ScriptBuf::new(),
             sequence: Sequence::MAX,
             witness: Witness::default(),
         },
         time: 0,
-        signature: Signature::default()
+        signature: Signature::default(),
     });
 
     // Outputs
     let script_bytes = hex!("04c10e83b2703ccf322f7dbd62dd5855ac7c10bd055814ce121ba32607d573b8810c02c0582aed05b4deb9c4b77b26d92428c61256cd42774babea0a073b2ed0c9");
     let out_script =
         script::Builder::new().push_slice(script_bytes).push_opcode(OP_CHECKSIG).into_script();
-    ret.output.push(TxOut { value: Amount::from_sat(50 * 1_000_000_000_000_000_000), script_pubkey: out_script });
+    ret.output.push(TxOut {
+        value: Amount::from_sat(50 * 1_000_000_000_000_000_000),
+        script_pubkey: out_script,
+    });
 
     // end
     ret
@@ -121,7 +127,10 @@ pub fn genesis_block(network: Network) -> Block {
                 bits: CompactTarget::from_consensus(0x1E0FFFF0),
                 nonce: 607505,
                 // TODO: ensure endian of the value
-                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                hash_state_root: BlockStateRoot::from_str(
+                    "e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495",
+                )
+                .unwrap(),
                 // TODO: ensure that RLP from empty value is producing exactly all zeroes
                 hash_utxo_root: Hash::all_zeros(),
                 gas_used: Amount::ZERO,
@@ -137,7 +146,10 @@ pub fn genesis_block(network: Network) -> Block {
                 bits: CompactTarget::from_consensus(0x1f00ffff),
                 nonce: 8026361,
                 // TODO: ensure endian of the value
-                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                hash_state_root: BlockStateRoot::from_str(
+                    "e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495",
+                )
+                .unwrap(),
                 // TODO: ensure that RLP from empty value is producing exactly all zeroes
                 hash_utxo_root: Hash::all_zeros(),
                 gas_used: Amount::ZERO,
@@ -153,7 +165,10 @@ pub fn genesis_block(network: Network) -> Block {
                 bits: CompactTarget::from_consensus(0x1e0377ae),
                 nonce: 52613770,
                 // TODO: ensure endian of the value
-                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                hash_state_root: BlockStateRoot::from_str(
+                    "e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495",
+                )
+                .unwrap(),
                 // TODO: ensure that RLP from empty value is producing exactly all zeroes
                 hash_utxo_root: Hash::all_zeros(),
                 gas_used: Amount::ZERO,
@@ -169,7 +184,10 @@ pub fn genesis_block(network: Network) -> Block {
                 bits: CompactTarget::from_consensus(0x1f00ffff),
                 nonce: 8026361,
                 // TODO: ensure endian of the value
-                hash_state_root: BlockStateRoot::from_str("e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495").unwrap(),
+                hash_state_root: BlockStateRoot::from_str(
+                    "e965ffd002cd6ad0e2dc402b8044de833e06b23127ea8c3d80aec91410771495",
+                )
+                .unwrap(),
                 // TODO: ensure that RLP from empty value is producing exactly all zeroes
                 hash_utxo_root: Hash::all_zeros(),
                 gas_used: Amount::ZERO,
@@ -190,31 +208,23 @@ impl ChainHash {
     // TODO: update the value when it'll be done
     /// `ChainHash` for mainnet unilayer.
     pub const UNILAYER: Self = Self([
-        130, 208, 182, 228, 190,  39, 139,  58, 
-        209, 174, 231, 210, 220,  19,  37,  62, 
-        228,   2,  43,   6, 229, 147,  72,  49, 
-        180, 160, 167,  15,  23, 105, 252,  78
+        130, 208, 182, 228, 190, 39, 139, 58, 209, 174, 231, 210, 220, 19, 37, 62, 228, 2, 43, 6,
+        229, 147, 72, 49, 180, 160, 167, 15, 23, 105, 252, 78,
     ]);
     /// `ChainHash` for testnet unilayer.
     pub const TESTNET: Self = Self([
-        101, 103,  70, 236,  56,  34,   7, 247, 
-        232, 204, 119, 104,  28, 218, 103, 199, 
-         66, 161, 161, 111, 160, 106, 147,   1, 
-        186,  31,  86, 174, 219, 216,  82,  22
+        101, 103, 70, 236, 56, 34, 7, 247, 232, 204, 119, 104, 28, 218, 103, 199, 66, 161, 161,
+        111, 160, 106, 147, 1, 186, 31, 86, 174, 219, 216, 82, 22,
     ]);
     /// `ChainHash` for signet unilayer.
     pub const SIGNET: Self = Self([
-        209, 150, 203,  81, 113, 143, 151, 226, 
-        130, 246, 190,  44,  69,  46, 221, 254, 
-         14, 152,  78, 255, 241, 162, 178, 248, 
-         90,  86,  96, 120,  81, 243,  91, 211
+        209, 150, 203, 81, 113, 143, 151, 226, 130, 246, 190, 44, 69, 46, 221, 254, 14, 152, 78,
+        255, 241, 162, 178, 248, 90, 86, 96, 120, 81, 243, 91, 211,
     ]);
     /// `ChainHash` for regtest unilayer.
     pub const REGTEST: Self = Self([
-        209, 150, 203,  81, 113, 143, 151, 226, 
-        130, 246, 190,  44,  69,  46, 221, 254, 
-         14, 152,  78, 255, 241, 162, 178, 248, 
-         90,  86,  96, 120,  81, 243,  91, 211
+        209, 150, 203, 81, 113, 143, 151, 226, 130, 246, 190, 44, 69, 46, 221, 254, 14, 152, 78,
+        255, 241, 162, 178, 248, 90, 86, 96, 120, 81, 243, 91, 211,
     ]);
 
     /// Returns the hash of the `network` genesis block for use as a chain hash.

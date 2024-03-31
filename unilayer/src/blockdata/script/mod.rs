@@ -179,8 +179,7 @@ pub fn read_scriptint128(v: &[u8]) -> Result<i128, Error> {
         i += 1;
         if (ch_data & 0x80) != 0 {
             low += 1;
-        }
-        else {
+        } else {
             break;
         }
     }
@@ -193,8 +192,7 @@ pub fn read_scriptint128(v: &[u8]) -> Result<i128, Error> {
         i += 1;
         if (ch_data & 0x80) != 0 {
             high += 1;
-        }
-        else {
+        } else {
             break;
         }
     }

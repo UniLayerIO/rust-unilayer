@@ -133,7 +133,11 @@ impl ColdStorage {
     fn master_fingerprint(&self) -> Fingerprint { self.master_xpub.fingerprint() }
 
     /// Signs `psbt` with this signer.
-    fn sign_psbt<C: Signing + Verification>(&self, secp: &Secp256k1<C>, mut psbt: Psbt) -> Result<Psbt> {
+    fn sign_psbt<C: Signing + Verification>(
+        &self,
+        secp: &Secp256k1<C>,
+        mut psbt: Psbt,
+    ) -> Result<Psbt> {
         match psbt.sign(&self.master_xpriv, secp) {
             Ok(keys) => assert_eq!(keys.len(), 1),
             Err((_, e)) => {
@@ -188,9 +192,9 @@ impl WatchOnly {
                 TxOut { value: to_amount, script_pubkey: to_address.script_pubkey() },
                 TxOut { value: change_amount, script_pubkey: change_address.script_pubkey() },
             ],
-            validator_register: vec![],          // TODO: add support
-            validator_vote: vec![],              // TODO: add support
-            gas_price: Amount::ZERO              // TODO: add support
+            validator_register: vec![], // TODO: add support
+            validator_vote: vec![],     // TODO: add support
+            gas_price: Amount::ZERO,    // TODO: add support
         };
 
         let psbt = Psbt::from_unsigned_tx(tx)?;

@@ -11,7 +11,7 @@ use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6, ToSoc
 
 use io::{BufRead, Read, Write};
 
-use crate::consensus::encode::{self, Decodable, Encodable, ReadExt, CompactSize, WriteExt};
+use crate::consensus::encode::{self, CompactSize, Decodable, Encodable, ReadExt, WriteExt};
 use crate::p2p::ServiceFlags;
 
 /// A message which can be sent on the UniLayer network
@@ -226,7 +226,7 @@ impl Decodable for AddrV2 {
                 }
                 let addr: [u16; 8] = read_be_address(r)?;
                 // check the first byte for the CJDNS marker
-                if addr[0] >> 8 != 0xFC{
+                if addr[0] >> 8 != 0xFC {
                     return Err(encode::Error::ParseFailed("Invalid CJDNS address"));
                 }
                 AddrV2::Cjdns(Ipv6Addr::new(

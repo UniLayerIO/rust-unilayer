@@ -382,10 +382,12 @@ impl Opcode {
 
             // 9 opcodes of NoOp class
             (OP_NOP, _) => Class::NoOp,
-            (op, _) if op.code >= OP_NOP1.code 
-                            && op.code <= OP_NOP10.code 
-                            && op.code != OP_CHECKLOCKTIMEVERIFY.code 
-                            && op.code != OP_CSV.code => Class::NoOp,
+            (op, _)
+                if op.code >= OP_NOP1.code
+                    && op.code <= OP_NOP10.code
+                    && op.code != OP_CHECKLOCKTIMEVERIFY.code
+                    && op.code != OP_CSV.code =>
+                Class::NoOp,
 
             // 1 opcode for `OP_RETURN`
             (OP_RETURN, _) => Class::ReturnOp,
@@ -396,19 +398,21 @@ impl Opcode {
                 Class::ReturnOp,
 
             // 60 opcodes operating equally to `OP_RETURN` only in Legacy context
-            (op, ClassifyContext::Legacy) if op.code >= OP_CHECKSIGADD.code 
-                                                  && op.code != OP_RLP_CASCADE_SIG.code 
-                                                  && op.code != OP_ZEROCOINMINT.code 
-                                                  && op.code != OP_ZEROCOINSPEND.code
-                                                  && op.code != OP_ZEROCOINPUBLICSPEND.code
-                                                  && op.code != OP_CHECKCOLDSTAKEVERIFY.code
-                                                  && op.code != OP_CHECKLEASEVERIFY.code
-                                                  && op.code != OP_LEASINGREWARD.code
-                                                  && op.code != OP_CLTV.code
-                                                  && op.code != OP_CREATE.code
-                                                  && op.code != OP_CALL.code 
-                                                  && op.code != OP_SPEND.code 
-                                                  && op.code != OP_SENDER.code  => Class::ReturnOp,
+            (op, ClassifyContext::Legacy)
+                if op.code >= OP_CHECKSIGADD.code
+                    && op.code != OP_RLP_CASCADE_SIG.code
+                    && op.code != OP_ZEROCOINMINT.code
+                    && op.code != OP_ZEROCOINSPEND.code
+                    && op.code != OP_ZEROCOINPUBLICSPEND.code
+                    && op.code != OP_CHECKCOLDSTAKEVERIFY.code
+                    && op.code != OP_CHECKLEASEVERIFY.code
+                    && op.code != OP_LEASINGREWARD.code
+                    && op.code != OP_CLTV.code
+                    && op.code != OP_CREATE.code
+                    && op.code != OP_CALL.code
+                    && op.code != OP_SPEND.code
+                    && op.code != OP_SENDER.code =>
+                Class::ReturnOp,
 
             // 2 opcodes operating equally to `OP_RETURN` only in TapScript context
             (OP_CHECKMULTISIG, ClassifyContext::TapScript)

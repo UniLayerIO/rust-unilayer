@@ -3,7 +3,7 @@ use honggfuzz::fuzz;
 fn do_test(data: &[u8]) {
     // We already fuzz Transactions in `./deserialize_transaction.rs`.
     let tx_result: Result<unilayer::bip152::PrefilledTransaction, _> =
-    unilayer::consensus::encode::deserialize(data);
+        unilayer::consensus::encode::deserialize(data);
 
     match tx_result {
         Err(_) => {}

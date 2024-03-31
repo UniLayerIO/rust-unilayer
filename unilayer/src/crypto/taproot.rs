@@ -8,13 +8,12 @@
 use core::fmt;
 
 use internals::write_err;
-use io::Write;
+use io::{BufRead, Write};
 
+use crate::consensus::{encode, Decodable, Encodable};
+use crate::prelude::*;
 use crate::sighash::{InvalidSighashTypeError, TapSighashType};
 use crate::taproot::serialized_signature::{self, SerializedSignature};
-use crate::prelude::*;
-use crate::consensus::{encode, Decodable, Encodable};
-use io::{BufRead};
 
 /// A BIP340-341 serialized taproot signature with the corresponding hash type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -84,7 +83,6 @@ impl Signature {
         SerializedSignature::from_raw_parts(buf, len)
     }
 }
-
 
 impl Default for Signature {
     fn default() -> Signature {

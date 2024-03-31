@@ -143,7 +143,9 @@ impl Mul<Weight> for FeeRate {
 impl Div<Weight> for Amount {
     type Output = FeeRate;
 
-    fn div(self, rhs: Weight) -> Self::Output { FeeRate(self.to_sat() * 1000 / (rhs.to_wu() as u128)) }
+    fn div(self, rhs: Weight) -> Self::Output {
+        FeeRate(self.to_sat() * 1000 / (rhs.to_wu() as u128))
+    }
 }
 
 crate::impl_parse_str_from_int_infallible!(FeeRate, u128, from_sat_per_kwu);

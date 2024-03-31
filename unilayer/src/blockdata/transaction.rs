@@ -25,14 +25,14 @@ use crate::blockdata::script::{Script, ScriptBuf};
 use crate::blockdata::witness::Witness;
 use crate::blockdata::FeeRate;
 use crate::consensus::{encode, Decodable, Encodable};
-use crate::error::{PrefixedHexError, UnprefixedHexError, ContainsPrefixError, MissingPrefixError};
-use crate::taproot::{Signature};
-use crate::taproot::serialized_signature::{self};
+use crate::error::{ContainsPrefixError, MissingPrefixError, PrefixedHexError, UnprefixedHexError};
 use crate::internal_macros::{impl_consensus_encoding, impl_hashencode};
+use crate::prelude::*;
 #[cfg(doc)]
 use crate::sighash::{EcdsaSighashType, TapSighashType};
-use crate::{prelude::*, PublicKey};
-use crate::{Amount, SignedAmount, CompactSize};
+use crate::taproot::serialized_signature::{self};
+use crate::taproot::Signature;
+use crate::{Amount, CompactSize, PublicKey, SignedAmount};
 #[rustfmt::skip]                // Keep public re-exports separate.
 pub use secp256k1::{constants};
 
@@ -409,7 +409,7 @@ impl Sequence {
     pub fn is_time_locked(&self) -> bool {
         self.is_relative_lock_time() & (self.0 & Sequence::LOCK_TYPE_MASK > 0)
     }
-    
+
     /// Creates a `Sequence` from an prefixed hex string.
     pub fn from_hex(s: &str) -> Result<Self, PrefixedHexError> {
         let stripped = if let Some(stripped) = s.strip_prefix("0x") {
@@ -558,8 +558,7 @@ pub struct TxOut {
 
 impl TxOut {
     /// This is used as a "null txout" in consensus signing code.
-    pub const NULL: Self =
-        TxOut { value: Amount::from_sat(0), script_pubkey: ScriptBuf::new() };
+    pub const NULL: Self = TxOut { value: Amount::from_sat(0), script_pubkey: ScriptBuf::new() };
 
     /// The weight of this output.
     ///
@@ -579,10 +578,10 @@ impl TxOut {
     /// Returns the total number of bytes that this output contributes to a transaction.
     ///
     /// There is no difference between base size vs total size for outputs.
-    pub fn size(&self) -> usize { 
+    pub fn size(&self) -> usize {
         let mut len = 0;
         len += self.value.consensus_encode(&mut sink()).unwrap();
-        len + size_from_script_pubkey(&self.script_pubkey) 
+        len + size_from_script_pubkey(&self.script_pubkey)
     }
 
     /// Creates a `TxOut` with given script and the smallest possible `value` that is **not** dust
@@ -637,19 +636,32 @@ pub struct ValidatorRegister {
     pub time: u32,
     /// Content of the signature
     pub signature: Signature,
-
 }
 
 impl ValidatorRegister {
     /// Creates a new [`ValidatorRegister`].
     #[inline]
-    pub const fn new(vin: TxIn, public_key: PublicKey, time: u32, signature: Signature) -> ValidatorRegister { ValidatorRegister { vin, public_key, time, signature } }
+    pub const fn new(
+        vin: TxIn,
+        public_key: PublicKey,
+        time: u32,
+        signature: Signature,
+    ) -> ValidatorRegister {
+        ValidatorRegister { vin, public_key, time, signature }
+    }
 
     /// Creates a "null" `ValidatorRegister`.
     ///
     /// This value is used for coinbase transactions because they don't have any previous outputs.
     #[inline]
-    pub fn null() -> ValidatorRegister { ValidatorRegister { vin: TxIn::default(), public_key: PublicKey::default(), time: 0, signature: Signature::default() } }
+    pub fn null() -> ValidatorRegister {
+        ValidatorRegister {
+            vin: TxIn::default(),
+            public_key: PublicKey::default(),
+            time: 0,
+            signature: Signature::default(),
+        }
+    }
 
     /// Checks if an `ValidatorRegister` is "null".
     ///
@@ -660,7 +672,7 @@ impl ValidatorRegister {
     /// Returns the total number of bytes that this ValidatorRegister contributes to a transaction.
     ///
     /// There is no difference between base size vs total size for outputs.
-    pub fn size(&self) -> usize { 
+    pub fn size(&self) -> usize {
         let mut size: usize = 4; // Serialized length of a u32 for the version number.
         size += self.vin.total_size();
         size += constants::PUBLIC_KEY_SIZE;
@@ -706,7 +718,7 @@ impl MNVote {
     /// Returns the total number of bytes that this MNVote contributes to a transaction.
     ///
     /// There is no difference between base size vs total size for outputs.
-    pub fn size(&self) -> usize { 
+    pub fn size(&self) -> usize {
         let mut size: usize = 4; // Serialized length of a u32 for the version number.
         size += self.vin.total_size();
         size + 4 // u32
@@ -739,13 +751,29 @@ pub struct ValidatorVote {
 impl ValidatorVote {
     /// Creates a new [`ValidatorVote`].
     #[inline]
-    pub const fn new(vin: TxIn, public_key: PublicKey, time: u32, votes: Vec<MNVote>, signature: Signature) -> ValidatorVote { ValidatorVote { vin, public_key, time, votes, signature } }
+    pub const fn new(
+        vin: TxIn,
+        public_key: PublicKey,
+        time: u32,
+        votes: Vec<MNVote>,
+        signature: Signature,
+    ) -> ValidatorVote {
+        ValidatorVote { vin, public_key, time, votes, signature }
+    }
 
     /// Creates a "null" `ValidatorVote`.
     ///
     /// This value is used for coinbase transactions because they don't have any previous outputs.
     #[inline]
-    pub fn null() -> ValidatorVote { ValidatorVote { vin: TxIn::default(), public_key: PublicKey::default(), time: 0, votes: vec![MNVote::default()], signature: Signature::default() } }
+    pub fn null() -> ValidatorVote {
+        ValidatorVote {
+            vin: TxIn::default(),
+            public_key: PublicKey::default(),
+            time: 0,
+            votes: vec![MNVote::default()],
+            signature: Signature::default(),
+        }
+    }
 
     /// Checks if an `ValidatorVote` is "null".
     ///
@@ -756,7 +784,7 @@ impl ValidatorVote {
     /// Returns the total number of bytes that this ValidatorVote contributes to a transaction.
     ///
     /// There is no difference between base size vs total size for outputs.
-    pub fn size(&self) -> usize { 
+    pub fn size(&self) -> usize {
         let mut size: usize = 4; // Serialized length of a u32 for the version number.
         size += self.vin.total_size();
         size += constants::PUBLIC_KEY_SIZE;
@@ -788,7 +816,7 @@ impl Decodable for ValidatorRegister {
         r: &mut R,
     ) -> Result<Self, encode::Error> {
         Ok(ValidatorRegister {
-            vin:TxIn::consensus_decode_from_finite_reader(r)?,
+            vin: TxIn::consensus_decode_from_finite_reader(r)?,
             public_key: PublicKey::consensus_decode_from_finite_reader(r)?,
             time: u32::consensus_decode_from_finite_reader(r)?,
             signature: Signature::consensus_decode_from_finite_reader(r)?,
@@ -868,7 +896,7 @@ impl fmt::Display for ValidatorVote {
 ///
 /// * [CTtransaction definition](https://github.com/bitcoin/bitcoin/blob/345457b542b6a980ccfbc868af0970a6f91d1b82/src/primitives/transaction.h#L279)
 /// Actual UniLayer code reference would be provided later.
-/// 
+///
 /// ### Serialization notes
 ///
 /// If any inputs have nonempty witnesses, the entire transaction is serialized
@@ -930,7 +958,7 @@ pub struct Transaction {
     /// List of transaction outputs.
     pub output: Vec<TxOut>,
 
-    // Here vector is used as a wrapping object, that can be empty, 
+    // Here vector is used as a wrapping object, that can be empty,
     // if transaction doesn't contain ValidatorRegister or ValidatorVote
     /// Collection of registers voted for the transaction
     pub validator_register: Vec<ValidatorRegister>,
@@ -1085,10 +1113,15 @@ impl Transaction {
         size += absolute::LockTime::SIZE;
 
         size += CompactSize::from(self.validator_register.len()).size();
-        size += self.validator_register.iter().map(|validator_register| validator_register.size()).sum::<usize>();
+        size += self
+            .validator_register
+            .iter()
+            .map(|validator_register| validator_register.size())
+            .sum::<usize>();
 
         size += CompactSize::from(self.validator_vote.len()).size();
-        size += self.validator_vote.iter().map(|validator_vote| validator_vote.size()).sum::<usize>();
+        size +=
+            self.validator_vote.iter().map(|validator_vote| validator_vote.size()).sum::<usize>();
 
         size + self.gas_price.consensus_encode(&mut sink()).unwrap()
     }
@@ -1100,7 +1133,7 @@ impl Transaction {
     #[inline]
     pub fn total_size(&self) -> usize {
         let mut size: usize = 4; // Serialized length of a u32 for the version number.
-	let uses_segwit = self.uses_segwit_serialization();
+        let uses_segwit = self.uses_segwit_serialization();
 
         if uses_segwit {
             size += 2; // 1 byte for the marker and 1 for the flag.
@@ -1110,13 +1143,7 @@ impl Transaction {
         size += self
             .input
             .iter()
-            .map(|input| {
-                if uses_segwit {
-                    input.total_size()
-                } else {
-                    input.base_size()
-                }
-            })
+            .map(|input| if uses_segwit { input.total_size() } else { input.base_size() })
             .sum::<usize>();
 
         size += CompactSize::from(self.output.len()).size();
@@ -1125,13 +1152,17 @@ impl Transaction {
         size += absolute::LockTime::SIZE;
 
         size += CompactSize::from(self.validator_register.len()).size();
-        size += self.validator_register.iter().map(|validator_register| validator_register.size()).sum::<usize>();
+        size += self
+            .validator_register
+            .iter()
+            .map(|validator_register| validator_register.size())
+            .sum::<usize>();
 
         size += CompactSize::from(self.validator_vote.len()).size();
-        size += self.validator_vote.iter().map(|validator_vote| validator_vote.size()).sum::<usize>();
+        size +=
+            self.validator_vote.iter().map(|validator_vote| validator_vote.size()).sum::<usize>();
 
         size + self.gas_price.consensus_encode(&mut sink()).unwrap()
-
     }
 
     /// Returns the "virtual size" (vsize) of this transaction.
@@ -1161,7 +1192,7 @@ impl Transaction {
     pub fn is_coinbase(&self) -> bool {
         self.input.len() == 1 && self.input[0].previous_output.is_null()
     }
-    // TODO: UniLayer uses coinstake transactions and they are in a position 1 typically. 
+    // TODO: UniLayer uses coinstake transactions and they are in a position 1 typically.
     // Add support for them.
 
     /// Returns `true` if the transaction itself opted in to be BIP-125-replaceable (RBF).
@@ -1552,8 +1583,10 @@ impl Decodable for Transaction {
                             input,
                             output,
                             lock_time: Decodable::consensus_decode_from_finite_reader(r)?,
-                            validator_register: Vec::<ValidatorRegister>::consensus_decode_from_finite_reader(r)?,
-                            validator_vote: Vec::<ValidatorVote>::consensus_decode_from_finite_reader(r)?,
+                            validator_register:
+                                Vec::<ValidatorRegister>::consensus_decode_from_finite_reader(r)?,
+                            validator_vote:
+                                Vec::<ValidatorVote>::consensus_decode_from_finite_reader(r)?,
                             gas_price: Amount::consensus_decode_from_finite_reader(r)?,
                         })
                     }
@@ -1579,7 +1612,8 @@ impl Decodable for Transaction {
                     input,
                     output: Decodable::consensus_decode_from_finite_reader(r)?,
                     lock_time: Decodable::consensus_decode_from_finite_reader(r)?,
-                    validator_register: Vec::<ValidatorRegister>::consensus_decode_from_finite_reader(r)?,
+                    validator_register:
+                        Vec::<ValidatorRegister>::consensus_decode_from_finite_reader(r)?,
                     validator_vote: Vec::<ValidatorVote>::consensus_decode_from_finite_reader(r)?,
                     gas_price: Amount::consensus_decode_from_finite_reader(r)?,
                 })
@@ -1895,7 +1929,8 @@ impl InputWeightPrediction {
                 let elem_size = elem_len + CompactSize(elem_len as u64).size();
                 (count + 1, total_size + elem_size)
             });
-        let witness_size = if count > 0 { total_size + CompactSize(count as u64).size() } else { 0 };
+        let witness_size =
+            if count > 0 { total_size + CompactSize(count as u64).size() } else { 0 };
         let script_size = input_script_len + CompactSize(input_script_len as u64).size();
 
         InputWeightPrediction { script_size, witness_size }
@@ -2100,10 +2135,7 @@ mod tests {
         let tx_bytes = hex!("0000fd000001021921212121212121212121f8b372b0239cc1dff600000000004f4f4f4f4f4f4f4f000000000000000000000000000000333732343133380d000000000000000000000000000000ff000000000009000dff000000000000000800000000000000000d");
         let tx: Result<Transaction, _> = deserialize(&tx_bytes);
         assert!(tx.is_err());
-        assert!(tx
-            .unwrap_err()
-            .to_string()
-            .contains("witness flag set but no witnesses present"));
+        assert!(tx.unwrap_err().to_string().contains("witness flag set but no witnesses present"));
     }
 
     #[test]
@@ -2264,10 +2296,7 @@ mod tests {
             format!("{:x}", tx.compute_txid()),
             "9652aa62b0e748caeec40c4cb7bc17c6792435cc3dfe447dd1ca24f912a1c6ec"
         );
-        assert_eq!(
-            format!("{:.10x}", tx.compute_txid()),
-            "9652aa62b0"
-        );
+        assert_eq!(format!("{:.10x}", tx.compute_txid()), "9652aa62b0");
         assert_eq!(tx.weight(), Weight::from_wu(2718));
 
         // non-segwit tx from my mempool
@@ -2529,7 +2558,7 @@ mod tests {
             output: vec![],
             validator_register: vec![],
             validator_vote: vec![],
-            gas_price: Amount::ZERO
+            gas_price: Amount::ZERO,
         }
         .weight();
 

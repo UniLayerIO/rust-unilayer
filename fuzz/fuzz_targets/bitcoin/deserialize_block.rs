@@ -2,7 +2,7 @@ use honggfuzz::fuzz;
 
 fn do_test(data: &[u8]) {
     let _: Result<unilayer::blockdata::block::Block, _> =
-    unilayer::consensus::encode::deserialize(data);
+        unilayer::consensus::encode::deserialize(data);
 }
 
 fn main() {

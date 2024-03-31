@@ -20,19 +20,21 @@ use core::{fmt, mem, u32};
 use hashes::{sha256, sha256d, Hash};
 use hex::error::{InvalidCharError, OddLengthStringError};
 use internals::write_err;
-use io::{Cursor, BufRead, Read, Write};
+use io::{BufRead, Cursor, Read, Write};
 
 use crate::bip152::{PrefilledTransaction, ShortId};
 use crate::bip158::{FilterHash, FilterHeader};
-use crate::blockdata::block::{self, BlockHash, TxMerkleNode, BlockStateRoot, BlockUTXORoot};
-use crate::blockdata::transaction::{Transaction, TxIn, TxOut, MNVote, ValidatorVote, ValidatorRegister};
+use crate::blockdata::block::{self, BlockHash, BlockStateRoot, BlockUTXORoot, TxMerkleNode};
+use crate::blockdata::transaction::{
+    MNVote, Transaction, TxIn, TxOut, ValidatorRegister, ValidatorVote,
+};
 use crate::consensus::{DecodeError, IterReader};
 #[cfg(feature = "std")]
 use crate::p2p::{
     address::{AddrV2Message, Address},
     message_blockdata::Inventory,
 };
-use crate::{prelude::*};
+use crate::prelude::*;
 use crate::taproot::TapLeafHash;
 
 /// Encoding error.
@@ -113,7 +115,7 @@ pub enum FromHexError {
     /// Purported hex string had odd length.
     OddLengthString(OddLengthStringError),
     /// Decoding error.
-    Decode(DecodeError<InvalidCharError>)
+    Decode(DecodeError<InvalidCharError>),
 }
 
 impl fmt::Display for FromHexError {
@@ -419,13 +421,18 @@ macro_rules! impl_int_encodable {
     ($ty:ident, $meth_dec:ident, $meth_enc:ident) => {
         impl Decodable for $ty {
             #[inline]
-            fn consensus_decode<R: BufRead + ?Sized>(r: &mut R) -> core::result::Result<Self, Error> {
+            fn consensus_decode<R: BufRead + ?Sized>(
+                r: &mut R,
+            ) -> core::result::Result<Self, Error> {
                 ReadExt::$meth_dec(r)
             }
         }
         impl Encodable for $ty {
             #[inline]
-            fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> core::result::Result<usize, io::Error> {
+            fn consensus_encode<W: Write + ?Sized>(
+                &self,
+                w: &mut W,
+            ) -> core::result::Result<usize, io::Error> {
                 w.$meth_enc(*self)?;
                 Ok(mem::size_of::<$ty>())
             }
@@ -447,9 +454,9 @@ impl CompactSize {
     /// Returns the number of bytes this CompactSize contributes to a transaction size.
     ///
     /// Returns 1 for 0..=0xFC, 3 for 0xFD..=(2^16-1), 5 for 0x10000..=(2^32-1), and 9 otherwise.
-    /// Note: It is important to remember that starting from 0xFD size value the actual size of the data 
+    /// Note: It is important to remember that starting from 0xFD size value the actual size of the data
     /// would be stored in the next bytes sequence.
-    /// 
+    ///
     /// Details:
     /// size <  253        -- 1 byte
     /// size <= USHRT_MAX  -- 3 bytes  (253 + 2 bytes)
@@ -542,29 +549,29 @@ impl Decodable for CompactSize {
     }
 }
 
-     /// Variable-length integers: bytes are a MSB base-128 encoding of the number.
-     /// 
-     /// The high bit in each byte signifies whether another digit follows. To make
-     /// sure the encoding is one-to-one, one is subtracted from all but the last digit.
-     /// Thus, the byte sequence a[] with length len, where all but the last byte
-     /// has bit 128 set, encodes the number:
-     ///
-     ///  (a[len-1] & 0x7F) + sum(i=1..len-1, 128^i*((a[len-i-1] & 0x7F)+1))
-     ///
-     /// Properties:
-     ///  Very small (0-127: 1 byte, 128-16511: 2 bytes, 16512-2113663: 3 bytes)
-     ///  Every integer has exactly one encoding
-     ///  Encoding does not depend on size of original integer type
-     ///  No redundancy: every (infinite) byte sequence corresponds to a list
-     ///   of encoded integers.
-     ///
-     /// 0:         [0x00]  256:        [0x81 0x00]
-     /// 1:         [0x01]  16383:      [0xFE 0x7F]
-     /// 127:       [0x7F]  16384:      [0xFF 0x00]
-     /// 128:  [0x80 0x00]  16511: [0x80 0xFF 0x7F]
-     /// 255:  [0x80 0x7F]  65535: [0x82 0xFD 0x7F]
-     /// 2^32:           [0x8E 0xFE 0xFE 0xFF 0x00]
-     /// 
+/// Variable-length integers: bytes are a MSB base-128 encoding of the number.
+///
+/// The high bit in each byte signifies whether another digit follows. To make
+/// sure the encoding is one-to-one, one is subtracted from all but the last digit.
+/// Thus, the byte sequence a[] with length len, where all but the last byte
+/// has bit 128 set, encodes the number:
+///
+///  (a[len-1] & 0x7F) + sum(i=1..len-1, 128^i*((a[len-i-1] & 0x7F)+1))
+///
+/// Properties:
+///  Very small (0-127: 1 byte, 128-16511: 2 bytes, 16512-2113663: 3 bytes)
+///  Every integer has exactly one encoding
+///  Encoding does not depend on size of original integer type
+///  No redundancy: every (infinite) byte sequence corresponds to a list
+///   of encoded integers.
+///
+/// 0:         [0x00]  256:        [0x81 0x00]
+/// 1:         [0x01]  16383:      [0xFE 0x7F]
+/// 127:       [0x7F]  16384:      [0xFF 0x00]
+/// 128:  [0x80 0x00]  16511: [0x80 0xFF 0x7F]
+/// 255:  [0x80 0x7F]  65535: [0x82 0xFD 0x7F]
+/// 2^32:           [0x8E 0xFE 0xFE 0xFF 0x00]
+///
 impl Encodable for VarInt {
     #[inline]
     fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> Result<usize, io::Error> {
@@ -581,10 +588,10 @@ impl Encodable for VarInt {
             }
             n = (n >> 7) - 1;
             len += 1;
-        };
-        for _ in 0 .. len {
-            let _ = u8::consensus_encode(&tmp[len],  w);
-        };
+        }
+        for _ in 0..len {
+            let _ = u8::consensus_encode(&tmp[len], w);
+        }
         Ok(len)
     }
 }
@@ -606,8 +613,7 @@ impl Decodable for VarInt {
                     return Err(self::Error::TooLargeVarInt);
                 }
                 n += 1;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -655,7 +661,7 @@ impl Encodable for VarInt128 {
             }
             high = (high >> 7) - 1;
             len += 1;
-        };
+        }
         loop {
             let a = (low & 0x7F) as u8;
             let b = (if len != 0 { 0x80 } else { 0x00 }) as u8;
@@ -665,14 +671,14 @@ impl Encodable for VarInt128 {
             }
             low = (low >> 7) - 1;
             len += 1;
-        };
+        }
 
         w.emit_u8(len as u8)?;
         // TODO len -= 1; ?
 
-        for _ in 0 .. len {
-            let _ = u8::consensus_encode(&tmp[len],  w);
-        };
+        for _ in 0..len {
+            let _ = u8::consensus_encode(&tmp[len], w);
+        }
         Ok(len)
     }
 }
@@ -700,8 +706,7 @@ impl Decodable for VarInt128 {
             i += 1;
             if (ch_data & 0x80) != 0 {
                 low += 1;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -714,8 +719,7 @@ impl Decodable for VarInt128 {
             i += 1;
             if (ch_data & 0x80) != 0 {
                 high += 1;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -804,7 +808,9 @@ macro_rules! impl_array {
 
         impl Decodable for [u8; $size] {
             #[inline]
-            fn consensus_decode<R: BufRead + ?Sized>(r: &mut R) -> core::result::Result<Self, Error> {
+            fn consensus_decode<R: BufRead + ?Sized>(
+                r: &mut R,
+            ) -> core::result::Result<Self, Error> {
                 let mut ret = [0; $size];
                 r.read_slice(&mut ret)?;
                 Ok(ret)
@@ -848,7 +854,10 @@ macro_rules! impl_vec {
     ($type: ty) => {
         impl Encodable for Vec<$type> {
             #[inline]
-            fn consensus_encode<W: Write + ?Sized>(&self, w: &mut W) -> core::result::Result<usize, io::Error> {
+            fn consensus_encode<W: Write + ?Sized>(
+                &self,
+                w: &mut W,
+            ) -> core::result::Result<usize, io::Error> {
                 let mut len = 0;
                 len += CompactSize(self.len() as u64).consensus_encode(w)?;
                 for c in self.iter() {
@@ -1181,8 +1190,14 @@ mod tests {
             test_compactsize_encode(0xFF, &0x100000000_u64.to_le_bytes()).unwrap(),
             CompactSize(0x100000000)
         );
-        assert_eq!(test_compactsize_encode(0xFE, &0x10000_u64.to_le_bytes()).unwrap(), CompactSize(0x10000));
-        assert_eq!(test_compactsize_encode(0xFD, &0xFD_u64.to_le_bytes()).unwrap(), CompactSize(0xFD));
+        assert_eq!(
+            test_compactsize_encode(0xFE, &0x10000_u64.to_le_bytes()).unwrap(),
+            CompactSize(0x10000)
+        );
+        assert_eq!(
+            test_compactsize_encode(0xFD, &0xFD_u64.to_le_bytes()).unwrap(),
+            CompactSize(0xFD)
+        );
 
         // Test that length calc is working correctly
         test_compactsize_len(CompactSize(0), 1);
@@ -1218,11 +1233,15 @@ mod tests {
             discriminant(&Error::NonMinimalCompactSize)
         );
         assert_eq!(
-            discriminant(&test_compactsize_encode(0xFE, &(0x10000_u64 - 1).to_le_bytes()).unwrap_err()),
+            discriminant(
+                &test_compactsize_encode(0xFE, &(0x10000_u64 - 1).to_le_bytes()).unwrap_err()
+            ),
             discriminant(&Error::NonMinimalCompactSize)
         );
         assert_eq!(
-            discriminant(&test_compactsize_encode(0xFD, &(0xFD_u64 - 1).to_le_bytes()).unwrap_err()),
+            discriminant(
+                &test_compactsize_encode(0xFD, &(0xFD_u64 - 1).to_le_bytes()).unwrap_err()
+            ),
             discriminant(&Error::NonMinimalCompactSize)
         );
 
@@ -1516,6 +1535,9 @@ mod tests {
 
         let mut hex = include_str!("../../tests/data/previous_tx_0_hex").to_string(); // An arbitrary transaction.
         hex.push_str("abcdef");
-        assert!(matches!(deserialize_hex::<Transaction>(&hex).unwrap_err(), FromHexError::Decode(DecodeError::TooManyBytes)));
+        assert!(matches!(
+            deserialize_hex::<Transaction>(&hex).unwrap_err(),
+            FromHexError::Decode(DecodeError::TooManyBytes)
+        ));
     }
 }

@@ -6,16 +6,18 @@
 
 #[deprecated(since = "0.0.0-NEXT-RELEASE", note = "use crate::T instead")]
 pub use crate::{
-    BlockHash, FilterHash, FilterHeader, TxMerkleNode, BlockStateRoot, BlockUTXORoot, WitnessCommitment, WitnessMerkleNode,
-    Wtxid,
+    BlockHash, BlockStateRoot, BlockUTXORoot, FilterHash, FilterHeader, TxMerkleNode,
+    WitnessCommitment, WitnessMerkleNode, Wtxid,
 };
 
 #[cfg(test)]
 mod tests {
-    use crate::hashes::Hash;
     use super::*;
-
-    use crate::{LegacySighash, SegwitV0Sighash, TapSighash, PubkeyHash, WPubkeyHash, WScriptHash, ScriptHash, XKeyIdentifier, Txid};
+    use crate::hashes::Hash;
+    use crate::{
+        LegacySighash, PubkeyHash, ScriptHash, SegwitV0Sighash, TapSighash, Txid, WPubkeyHash,
+        WScriptHash, XKeyIdentifier,
+    };
 
     #[test]
     fn hash_display() {
@@ -45,18 +47,9 @@ mod tests {
             "dabc11914abcd8072900042a2681e52f8dba99ce82e224f97b5fdb7cd4b9c803",
         );
 
-        assert_eq!(
-            PubkeyHash::hash(&[]).to_string(),
-            "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",
-        );
-        assert_eq!(
-            ScriptHash::hash(&[]).to_string(),
-            "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",
-        );
-        assert_eq!(
-            WPubkeyHash::hash(&[]).to_string(),
-            "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",
-        );
+        assert_eq!(PubkeyHash::hash(&[]).to_string(), "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",);
+        assert_eq!(ScriptHash::hash(&[]).to_string(), "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",);
+        assert_eq!(WPubkeyHash::hash(&[]).to_string(), "b472a266d0bd89c13706a4132ccfb16f7c3b9fcb",);
         assert_eq!(
             WScriptHash::hash(&[]).to_string(),
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

@@ -244,7 +244,7 @@ fn serde_regression_psbt() {
         }],
         validator_register: vec![],
         validator_vote: vec![],
-        gas_price: Amount::ZERO
+        gas_price: Amount::ZERO,
     };
     let unknown: BTreeMap<raw::Key, Vec<u8>> =
         vec![(raw::Key { type_value: 9, key: vec![0, 1] }, vec![3, 4, 5])].into_iter().collect();
