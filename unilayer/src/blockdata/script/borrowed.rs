@@ -68,7 +68,7 @@ use crate::taproot::{LeafVersion, TapLeafHash, TapNodeHash};
 ///
 /// * [CScript definition](https://github.com/bitcoin/bitcoin/blob/d492dc1cdaabdc52b0766bf4cba4bd73178325d0/src/script/script.h#L410)
 /// Actual UniLayer code reference would be provided later.
-/// 
+///
 #[derive(PartialOrd, Ord, PartialEq, Eq, Hash)]
 #[repr(transparent)]
 pub struct Script(pub(in crate::blockdata::script) [u8]);
@@ -185,8 +185,7 @@ impl Script {
         let ver_opcode = Opcode::from(self.0[0]); // Version 0 or PUSHNUM_1-PUSHNUM_16
         let push_opbyte = self.0[1]; // Second byte push opcode 2-40 bytes
 
-        if push_opbyte < OP_PUSHBYTES_2.to_u8() || push_opbyte > OP_PUSHBYTES_40.to_u8()
-        {
+        if push_opbyte < OP_PUSHBYTES_2.to_u8() || push_opbyte > OP_PUSHBYTES_40.to_u8() {
             return None;
         }
         // Check that the rest of the script has the correct size
@@ -404,7 +403,6 @@ impl Script {
     /// broadcastable on today’s UniLayer network.
     #[deprecated(since = "0.32.0", note = "use minimal_non_dust and friends")]
     pub fn dust_value(&self) -> crate::Amount { self.minimal_non_dust() }
-
 
     /// Returns the minimum value an output with this script should have in order to be
     /// broadcastable on today's UniLayer network.

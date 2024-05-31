@@ -1,8 +1,8 @@
+use honggfuzz::fuzz;
 use unilayer::address::Address;
 use unilayer::blockdata::script;
 use unilayer::consensus::encode;
 use unilayer::Network;
-use honggfuzz::fuzz;
 
 fn do_test(data: &[u8]) {
     let s: Result<script::ScriptBuf, _> = encode::deserialize(data);

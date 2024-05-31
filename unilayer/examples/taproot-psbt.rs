@@ -241,7 +241,7 @@ fn generate_bip86_key_spend_tx(
         output: outputs,
         validator_register: vec![],
         validator_vote: vec![],
-        gas_price: Amount::ZERO
+        gas_price: Amount::ZERO,
     };
     let mut psbt = Psbt::from_unsigned_tx(tx1)?;
 
@@ -436,7 +436,7 @@ impl BenefactorWallet {
             output: vec![],
             validator_register: vec![],
             validator_vote: vec![],
-            gas_price: Amount::ZERO
+            gas_price: Amount::ZERO,
         };
         let mut next_psbt = Psbt::from_unsigned_tx(next_tx)?;
         let mut origins = BTreeMap::new();
@@ -582,7 +582,7 @@ impl BenefactorWallet {
                 output: vec![],
                 validator_register: vec![],
                 validator_vote: vec![],
-                gas_price: Amount::ZERO
+                gas_price: Amount::ZERO,
             };
             let mut next_psbt = Psbt::from_unsigned_tx(next_tx)?;
             let mut origins = BTreeMap::new();

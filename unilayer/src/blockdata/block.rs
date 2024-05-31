@@ -21,7 +21,7 @@ use crate::consensus::{encode, Decodable, Encodable};
 use crate::internal_macros::{impl_consensus_encoding, impl_hashencode};
 use crate::pow::{CompactTarget, Target, Work};
 use crate::prelude::*;
-use crate::{merkle_tree, Network, CompactSize};
+use crate::{merkle_tree, CompactSize, Network};
 
 hashes::hash_newtype! {
     /// A UniLayer block hash.
@@ -86,7 +86,18 @@ pub struct Header {
     pub gas_used: Amount,
 }
 
-impl_consensus_encoding!(Header, version, prev_blockhash, merkle_root, time, bits, nonce, hash_state_root, hash_utxo_root, gas_used);
+impl_consensus_encoding!(
+    Header,
+    version,
+    prev_blockhash,
+    merkle_root,
+    time,
+    bits,
+    nonce,
+    hash_state_root,
+    hash_utxo_root,
+    gas_used
+);
 
 impl Header {
     /// The number of bytes that the block header contributes to the size of a block.

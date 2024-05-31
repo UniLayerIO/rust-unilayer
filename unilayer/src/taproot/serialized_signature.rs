@@ -9,11 +9,10 @@ use core::borrow::Borrow;
 use core::{fmt, ops};
 
 pub use into_iter::IntoIter;
-use io::Write;
+use io::{BufRead, Write};
 
 use super::{SigFromSliceError, Signature};
 use crate::consensus::{encode, Decodable, Encodable};
-use io::{BufRead};
 
 pub(crate) const MAX_LEN: usize = 65; // 64 for sig, 1B sighash flag
 
@@ -186,12 +185,7 @@ impl SerializedSignature {
 }
 
 impl Default for SerializedSignature {
-    fn default() -> SerializedSignature {
-        SerializedSignature {
-            data: [0u8; MAX_LEN],
-            len: 0,
-        }
-    }
+    fn default() -> SerializedSignature { SerializedSignature { data: [0u8; MAX_LEN], len: 0 } }
 }
 
 /// Separate mod to prevent outside code from accidentally breaking invariants.

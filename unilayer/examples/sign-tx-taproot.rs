@@ -57,7 +57,7 @@ fn main() {
         output: vec![spend, change],         // Outputs, order does not matter.
         validator_register: vec![],          // TODO: add support
         validator_vote: vec![],              // TODO: add support
-        gas_price: Amount::ZERO              // TODO: add support
+        gas_price: Amount::ZERO,             // TODO: add support
     };
     let input_index = 0;
 

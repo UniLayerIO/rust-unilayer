@@ -1,5 +1,5 @@
-use unilayer::hashes::{ripemd160, Hash, HashEngine};
 use honggfuzz::fuzz;
+use unilayer::hashes::{ripemd160, Hash, HashEngine};
 
 fn do_test(data: &[u8]) {
     let mut engine = ripemd160::Hash::engine();

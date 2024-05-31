@@ -13,7 +13,7 @@ use hashes::{sha256, siphash24, Hash};
 use internals::impl_array_newtype;
 use io::{BufRead, Write};
 
-use crate::consensus::encode::{self, Decodable, Encodable, CompactSize};
+use crate::consensus::encode::{self, CompactSize, Decodable, Encodable};
 use crate::internal_macros::{impl_bytes_newtype, impl_consensus_encoding};
 use crate::prelude::*;
 use crate::{block, Block, BlockHash, Transaction};
@@ -375,14 +375,11 @@ mod test {
     use hex::FromHex;
 
     use super::*;
-    use crate::blockdata::block::{TxMerkleNode, BlockStateRoot, BlockUTXORoot};
+    use crate::blockdata::block::{BlockStateRoot, BlockUTXORoot, TxMerkleNode};
     use crate::blockdata::locktime::absolute;
     use crate::blockdata::transaction;
     use crate::consensus::encode::{deserialize, serialize};
-    use crate::{
-        Amount, CompactTarget, OutPoint, ScriptBuf, Sequence, TxIn, TxOut, Txid,
-        Witness,
-    };
+    use crate::{Amount, CompactTarget, OutPoint, ScriptBuf, Sequence, TxIn, TxOut, Txid, Witness};
 
     fn dummy_tx(nonce: &[u8]) -> Transaction {
         Transaction {
@@ -397,7 +394,7 @@ mod test {
             output: vec![TxOut { value: Amount::ONE_AULR, script_pubkey: ScriptBuf::new() }],
             validator_register: vec![],
             validator_vote: vec![],
-            gas_price: Amount::ZERO
+            gas_price: Amount::ZERO,
         }
     }
 

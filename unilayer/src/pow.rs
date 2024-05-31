@@ -18,7 +18,7 @@ use crate::blockdata::block::BlockHash;
 use crate::consensus::encode::{self, Decodable, Encodable};
 #[cfg(doc)]
 use crate::consensus::Params;
-use crate::error::{PrefixedHexError, UnprefixedHexError, ContainsPrefixError, MissingPrefixError};
+use crate::error::{ContainsPrefixError, MissingPrefixError, PrefixedHexError, UnprefixedHexError};
 use crate::Network;
 
 /// Implement traits and methods shared by `Target` and `Work`.
@@ -44,17 +44,23 @@ macro_rules! do_impl {
 
         impl fmt::Display for $ty {
             #[inline]
-            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result { fmt::Display::fmt(&self.0, f) }
+            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result {
+                fmt::Display::fmt(&self.0, f)
+            }
         }
 
         impl fmt::LowerHex for $ty {
             #[inline]
-            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result { fmt::LowerHex::fmt(&self.0, f) }
+            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result {
+                fmt::LowerHex::fmt(&self.0, f)
+            }
         }
 
         impl fmt::UpperHex for $ty {
             #[inline]
-            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result { fmt::UpperHex::fmt(&self.0, f) }
+            fn fmt(&self, f: &mut fmt::Formatter) -> core::fmt::Result {
+                fmt::UpperHex::fmt(&self.0, f)
+            }
         }
     };
 }
@@ -103,7 +109,8 @@ impl Sub for Work {
 #[cfg_attr(feature = "serde", serde(crate = "actual_serde"))]
 pub struct Target(U256);
 
-impl Target { // TODO: ensure correct values
+impl Target {
+    // TODO: ensure correct values
     /// When parsing nBits, UniLayer Core converts a negative target threshold into a target of zero.
     pub const ZERO: Target = Target(U256::ZERO);
     /// The maximum possible target.
@@ -141,7 +148,8 @@ impl Target { // TODO: ensure correct values
     /// Computes the [`Target`] value from a compact representation.
     ///
     /// ref: <https://developer.bitcoin.org/reference/block_chain.html#target-nbits>
-    pub fn from_compact(c: CompactTarget) -> Target { // TODO: update formulae to support updated compact for 1e-18
+    pub fn from_compact(c: CompactTarget) -> Target {
+        // TODO: update formulae to support updated compact for 1e-18
         let bits = c.0;
         // This is a floating-point "compact" encoding originally used by
         // OpenSSL, which satoshi put into consensus code, so we're stuck
@@ -1646,7 +1654,7 @@ mod tests {
         // TODO: implement dPOS work concept
         let tests: Vec<(u128, f64)> = vec![
             // (chainwork, core log2)                // height
-            (0x200020002, 33.000022)                // 1
+            (0x200020002, 33.000022), // 1
         ];
 
         for (chainwork, core_log2) in tests {

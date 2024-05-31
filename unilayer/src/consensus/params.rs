@@ -12,7 +12,8 @@ use crate::pow::Target;
 /// Parameters that influence chain consensus.
 #[non_exhaustive]
 #[derive(Debug, Clone)]
-pub struct Params { // TODO: validate parameters
+pub struct Params {
+    // TODO: validate parameters
     /// Network for which parameters are valid.
     pub network: Network,
     /// Time when BIP16 becomes active.
@@ -56,10 +57,10 @@ impl Params {
     /// The mainnet parameters.
     pub const MAINNET: Params = Params {
         network: Network::UniLayer,
-        bip16_time: 1333238400,                 // Apr 1 2012
+        bip16_time: 1333238400, // Apr 1 2012
         bip34_height: 1,
         bip65_height: 1,
-        bip66_height: 1, 
+        bip66_height: 1,
         rule_change_activation_threshold: 10260, // 95%
         miner_confirmation_window: 2016,
         pow_limit: Target::MAX_ATTAINABLE_MAINNET,
@@ -72,7 +73,7 @@ impl Params {
     /// The testnet parameters.
     pub const TESTNET: Params = Params {
         network: Network::Testnet,
-        bip16_time: 1333238400,                 // Apr 1 2012
+        bip16_time: 1333238400, // Apr 1 2012
         bip34_height: 1,
         bip65_height: 1,
         bip66_height: 1,
@@ -88,7 +89,7 @@ impl Params {
     /// The signet parameters.
     pub const SIGNET: Params = Params {
         network: Network::Signet,
-        bip16_time: 1333238400,                 // Apr 1 2012
+        bip16_time: 1333238400, // Apr 1 2012
         bip34_height: 1,
         bip65_height: 1,
         bip66_height: 1,
@@ -104,7 +105,7 @@ impl Params {
     /// The regtest parameters.
     pub const REGTEST: Params = Params {
         network: Network::Regtest,
-        bip16_time: 1333238400,  // Apr 1 2012
+        bip16_time: 1333238400, // Apr 1 2012
         bip34_height: 1,
         bip65_height: 1,
         bip66_height: 1,

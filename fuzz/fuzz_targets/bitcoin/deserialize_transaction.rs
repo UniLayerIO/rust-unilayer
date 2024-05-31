@@ -2,7 +2,7 @@ use honggfuzz::fuzz;
 
 fn do_test(data: &[u8]) {
     let tx_result: Result<unilayer::blockdata::transaction::Transaction, _> =
-    unilayer::consensus::encode::deserialize(data);
+        unilayer::consensus::encode::deserialize(data);
     match tx_result {
         Err(_) => {}
         Ok(mut tx) => {

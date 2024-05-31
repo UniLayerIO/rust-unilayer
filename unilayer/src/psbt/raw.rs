@@ -12,7 +12,8 @@ use io::{BufRead, Write};
 
 use super::serialize::{Deserialize, Serialize};
 use crate::consensus::encode::{
-    self, deserialize, serialize, Decodable, Encodable, ReadExt, CompactSize, WriteExt, MAX_VEC_SIZE,
+    self, deserialize, serialize, CompactSize, Decodable, Encodable, ReadExt, WriteExt,
+    MAX_VEC_SIZE,
 };
 use crate::prelude::*;
 use crate::psbt::Error;

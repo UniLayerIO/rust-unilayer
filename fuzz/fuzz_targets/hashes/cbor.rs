@@ -1,6 +1,6 @@
-use unilayer::hashes::{ripemd160, sha1, sha256d, sha512, Hmac};
 use honggfuzz::fuzz;
 use serde::{Deserialize, Serialize};
+use unilayer::hashes::{ripemd160, sha1, sha256d, sha512, Hmac};
 
 #[derive(Deserialize, Serialize)]
 struct Hmacs {

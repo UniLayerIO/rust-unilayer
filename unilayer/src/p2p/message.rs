@@ -12,7 +12,7 @@ use hashes::{sha256d, Hash};
 use io::{BufRead, Write};
 
 use crate::blockdata::{block, transaction};
-use crate::consensus::encode::{self, CheckedData, Decodable, Encodable, CompactSize};
+use crate::consensus::encode::{self, CheckedData, CompactSize, Decodable, Encodable};
 use crate::merkle_tree::MerkleBlock;
 use crate::p2p::address::{AddrV2Message, Address};
 use crate::p2p::{
@@ -743,8 +743,7 @@ mod test {
             0x64, 0x64, 0x72, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x5d, 0xf6, 0xe0, 0xe2
         ]);
-        let preimage =
-            RawNetworkMessage::new(Magic::UNILAYER, NetworkMessage::GetAddr);
+        let preimage = RawNetworkMessage::new(Magic::UNILAYER, NetworkMessage::GetAddr);
         assert!(msg.is_ok());
         let msg: RawNetworkMessage = msg.unwrap();
         assert_eq!(preimage.magic, msg.magic);

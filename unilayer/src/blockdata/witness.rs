@@ -13,9 +13,9 @@ use io::{BufRead, Write};
 use crate::consensus::encode::{Error, MAX_VEC_SIZE};
 use crate::consensus::{Decodable, Encodable, WriteExt};
 use crate::crypto::ecdsa;
-use crate::taproot::{self, TAPROOT_ANNEX_PREFIX};
 use crate::prelude::*;
-use crate::{Script, CompactSize};
+use crate::taproot::{self, TAPROOT_ANNEX_PREFIX};
+use crate::{CompactSize, Script};
 
 /// The Witness is the data used to unlock unilayer since the [segwit upgrade].
 ///
@@ -235,11 +235,7 @@ impl Witness {
     /// Creates a new empty [`Witness`].
     #[inline]
     pub const fn new() -> Self {
-        Witness {
-            content: Vec::new(),
-            witness_elements: 0,
-            indices_start: 0,
-        }
+        Witness { content: Vec::new(), witness_elements: 0, indices_start: 0 }
     }
 
     /// Creates a witness required to spend a P2WPKH output.
@@ -350,7 +346,8 @@ impl Witness {
         element_len_compactsize
             .consensus_encode(&mut &mut self.content[previous_content_end..end_compactsize])
             .expect("writers on vec don't error, space granted through previous resize");
-        self.content[end_compactsize..end_compactsize + new_element.len()].copy_from_slice(new_element);
+        self.content[end_compactsize..end_compactsize + new_element.len()]
+            .copy_from_slice(new_element);
     }
 
     /// Pushes, as a new element on the witness, an ECDSA signature.
@@ -506,8 +503,7 @@ impl<'de> serde::Deserialize<'de> for Witness {
 
                 while let Some(elem) = a.next_element::<String>()? {
                     let vec = Vec::<u8>::from_hex(&elem).map_err(|e| match e {
-                        InvalidChar(ref e) => match core::char::from_u32(e.invalid_char(
-                        ).into()) {
+                        InvalidChar(ref e) => match core::char::from_u32(e.invalid_char().into()) {
                             Some(c) => de::Error::invalid_value(
                                 Unexpected::Char(c),
                                 &"a valid hex character",
@@ -557,7 +553,7 @@ impl Default for Witness {
 
 #[cfg(test)]
 mod test {
-    use hex::{test_hex_unwrap as hex};
+    use hex::test_hex_unwrap as hex;
 
     use super::*;
     use crate::consensus::{deserialize, serialize};
