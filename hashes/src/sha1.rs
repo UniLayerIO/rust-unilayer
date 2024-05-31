@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
 
 //! SHA1 implementation.
-//!
 
+use core::cmp;
 use core::ops::Index;
 use core::slice::SliceIndex;
-use core::{cmp, str};
 
 use crate::{FromSliceError, HashEngine as _};
 

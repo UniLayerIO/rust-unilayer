@@ -6,11 +6,9 @@
 // contents here as CC0.
 
 //! HASH160 (SHA256 then RIPEMD160) implementation.
-//!
 
 use core::ops::Index;
 use core::slice::SliceIndex;
-use core::str;
 
 use crate::{ripemd160, sha256, FromSliceError};
 

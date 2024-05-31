@@ -3,7 +3,6 @@
 //! Bitcoin/UniLayer serde macros.
 //!
 //! This module provides internal macros used for unit tests.
-//!
 
 #[cfg(feature = "serde")]
 macro_rules! serde_round_trip (

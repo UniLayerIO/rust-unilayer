@@ -1,4 +1,4 @@
-Rust UniLayer Internals
+# Rust UniLayer Internals
 ======================
 
 This crate is only meant to be used internally by crates in the

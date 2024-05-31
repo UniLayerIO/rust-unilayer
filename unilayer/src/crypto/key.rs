@@ -732,6 +732,7 @@ pub type UntweakedKeypair = Keypair;
 /// Tweaked BIP-340 key pair
 ///
 /// # Examples
+///
 /// ```
 /// # #[cfg(feature = "rand-std")] {
 /// # use unilayer::key::{Keypair, TweakedKeypair, TweakedPublicKey};
@@ -768,6 +769,7 @@ pub trait TapTweak {
     ///  * G is the generator point
     ///
     /// # Returns
+    ///
     /// The tweaked key and its parity.
     fn tap_tweak<C: Verification>(
         self,
@@ -797,6 +799,7 @@ impl TapTweak for UntweakedPublicKey {
     ///  * G is the generator point
     ///
     /// # Returns
+    ///
     /// The tweaked key and its parity.
     fn tap_tweak<C: Verification>(
         self,
@@ -817,18 +820,16 @@ impl TapTweak for UntweakedKeypair {
     type TweakedAux = TweakedKeypair;
     type TweakedKey = TweakedKeypair;
 
-    /// Tweaks private and public keys within an untweaked [`Keypair`] with corresponding public key
-    /// value and optional script tree merkle root.
+    /// Applies a Taproot tweak to both keys within the keypair.
     ///
-    /// This is done by tweaking private key within the pair using the equation q = p + H(P|c), where
-    ///  * q is the tweaked private key
-    ///  * p is the internal private key
-    ///  * H is the hash function
-    ///  * c is the commitment data
-    /// The public key is generated from a private key by multiplying with generator point, Q = qG.
+    /// If `merkle_root` is provided, produces a Taproot key that can be spent by any
+    /// of the script paths committed to by the root. If it is not provided, produces
+    /// a Taproot key which can [provably only be spent via
+    /// keyspend](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki#cite_note-23).
     ///
     /// # Returns
-    /// The tweaked key and its parity.
+    ///
+    /// The tweaked keypair.
     fn tap_tweak<C: Verification>(
         self,
         secp: &Secp256k1<C>,
@@ -1543,12 +1544,12 @@ mod tests {
     }
 
     #[test]
-    #[cfg(all(not(feature = "std"), feature = "no-std"))]
+    #[cfg(not(feature = "std"))]
     fn private_key_debug_is_obfuscated() {
         let sk =
             PrivateKey::from_str("cVt4o7BGAig1UXywgGSmARhxMdzP5qvQsxKkSsc1XEkw3tDTQFpy").unwrap();
         // Why is this not shortened? In rust-secp256k1/src/secret it is printed with "#{:016x}"?
-        let want = "PrivateKey { compressed: true, network: Testnet, inner: SecretKey(#7217ac58fbad8880a91032107b82cb6c5422544b426c350ee005cf509f3dbf7b) }";
+        let want = "PrivateKey { compressed: true, network: Test, inner: SecretKey(#7217ac58fbad8880a91032107b82cb6c5422544b426c350ee005cf509f3dbf7b) }";
         let got = format!("{:?}", sk);
         assert_eq!(got, want)
     }

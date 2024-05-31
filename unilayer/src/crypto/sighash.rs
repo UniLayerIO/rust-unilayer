@@ -32,10 +32,12 @@ pub(crate) const UINT256_ONE: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0
 ];
 
-macro_rules! impl_thirty_two_byte_hash {
+macro_rules! impl_message_from_hash {
     ($ty:ident) => {
-        impl secp256k1::ThirtyTwoByteHash for $ty {
-            fn into_32(self) -> [u8; 32] { self.to_byte_array() }
+        impl From<$ty> for secp256k1::Message {
+            fn from(hash: $ty) -> secp256k1::Message {
+                secp256k1::Message::from_digest(hash.to_byte_array())
+            }
         }
     };
 }
@@ -50,8 +52,8 @@ hash_newtype! {
     pub struct SegwitV0Sighash(sha256d::Hash);
 }
 
-impl_thirty_two_byte_hash!(LegacySighash);
-impl_thirty_two_byte_hash!(SegwitV0Sighash);
+impl_message_from_hash!(LegacySighash);
+impl_message_from_hash!(SegwitV0Sighash);
 
 sha256t_hash_newtype! {
     pub struct TapSighashTag = hash_str("TapSighash");
@@ -59,11 +61,10 @@ sha256t_hash_newtype! {
     /// Taproot-tagged hash with tag \"TapSighash\".
     ///
     /// This hash type is used for computing taproot signature hash."
-    #[hash_newtype(forward)]
     pub struct TapSighash(_);
 }
 
-impl_thirty_two_byte_hash!(TapSighash);
+impl_message_from_hash!(TapSighash);
 
 /// Efficiently calculates signature hash message for legacy, segwit and taproot inputs.
 #[derive(Debug)]
@@ -573,6 +574,10 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
 
     /// Encodes the BIP341 signing data for any flag type into a given object implementing the
     /// [`io::Write`] trait.
+    ///
+    /// In order to sign, the data written by this function must be hashed using a tagged hash. This
+    /// can be achieved by using the [`TapSighash::engine()`] function, writing to the engine, then
+    /// finalizing the hash with [`TapSighash::from_engine()`].
     pub fn taproot_encode_signing_data_to<W: Write + ?Sized, T: Borrow<TxOut>>(
         &mut self,
         writer: &mut W,
@@ -765,6 +770,10 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
     /// `script_code` is dependent on the type of the spend transaction. For p2wpkh use
     /// [`Script::p2wpkh_script_code`], for p2wsh just pass in the witness script. (Also see
     /// [`Self::p2wpkh_signature_hash`] and [`SighashCache::p2wsh_signature_hash`].)
+    ///
+    /// In order to sign, the data written by this function must be hashed using a double SHA256
+    /// hash. This can be achieved either by using the [`hashes::sha256d::Hash`] type or one of the
+    /// custom sighash types in this module ([`SegwitV0Sighash`] and [`LegacySighash`]).
     pub fn segwit_v0_encode_signing_data_to<W: Write + ?Sized>(
         &mut self,
         writer: &mut W,
@@ -810,9 +819,9 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
             let mut single_enc = LegacySighash::engine();
             self.tx.borrow().output[input_index].consensus_encode(&mut single_enc)?;
             let hash = LegacySighash::from_engine(single_enc);
-            writer.write_all(&hash[..])?;
+            writer.write_all(hash.as_byte_array())?;
         } else {
-            writer.write_all(&zero_hash[..])?;
+            writer.write_all(zero_hash.as_byte_array())?;
         }
 
         self.tx.borrow().lock_time.consensus_encode(writer)?;
@@ -879,8 +888,8 @@ impl<R: Borrow<Transaction>> SighashCache<R> {
     /// # Warning
     ///
     /// - Does NOT attempt to support OP_CODESEPARATOR. In general this would require evaluating
-    /// `script_pubkey` to determine which separators get evaluated and which don't, which we don't
-    /// have the information to determine.
+    ///   `script_pubkey` to determine which separators get evaluated and which don't, which we don't
+    ///   have the information to determine.
     /// - Does NOT handle the sighash single bug (see "Return type" section)
     ///
     /// # Returns
@@ -1946,7 +1955,7 @@ mod tests {
                 .taproot_signature_hash(tx_ind, &Prevouts::All(&utxos), None, None, hash_ty)
                 .unwrap();
 
-            let msg = secp256k1::Message::from_digest(sighash.to_byte_array());
+            let msg = secp256k1::Message::from(sighash);
             let key_spend_sig = secp.sign_schnorr_with_aux_rand(&msg, &tweaked_keypair, &[0u8; 32]);
 
             assert_eq!(expected.internal_pubkey, internal_key);

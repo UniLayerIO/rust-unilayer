@@ -3,7 +3,6 @@
 //! Bitcoin/UniLayer Taproot.
 //!
 //! This module provides support for taproot tagged hashes.
-//!
 
 pub mod merkle_branch;
 pub mod serialized_signature;
@@ -36,7 +35,6 @@ sha256t_hash_newtype! {
     /// Taproot-tagged hash with tag \"TapLeaf\".
     ///
     /// This is used for computing tapscript script spend hash.
-    #[hash_newtype(forward)]
     pub struct TapLeafHash(_);
 
     pub struct TapBranchTag = hash_str("TapBranch");
@@ -44,7 +42,6 @@ sha256t_hash_newtype! {
     /// Tagged hash used in taproot trees.
     ///
     /// See BIP-340 for tagging rules.
-    #[hash_newtype(forward)]
     pub struct TapNodeHash(_);
 
     pub struct TapTweakTag = hash_str("TapTweak");
@@ -52,7 +49,6 @@ sha256t_hash_newtype! {
     /// Taproot-tagged hash with tag \"TapTweak\".
     ///
     /// This hash type is used while computing the tweaked public key.
-    #[hash_newtype(forward)]
     pub struct TapTweakHash(_);
 }
 
@@ -392,12 +388,12 @@ impl TaprootBuilder {
     /// example, [(3, S1), (2, S2), (5, S3)] would construct a [`TapTree`] that has optimal
     /// satisfaction weight when probability for S1 is 30%, S2 is 20% and S3 is 50%.
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// - When the optimal Huffman Tree has a depth more than 128.
     /// - If the provided list of script weights is empty.
     ///
-    /// # Edge Cases:
+    /// # Edge Cases
     ///
     /// If the script weight calculations overflow, a sub-optimal tree may be generated. This should
     /// not happen unless you are dealing with billions of branches with weights close to 2^32.
@@ -433,8 +429,13 @@ impl TaprootBuilder {
         Ok(TaprootBuilder { branch: vec![Some(node)] })
     }
 
-    /// Adds a leaf script at `depth` to the builder with script version `ver`. Errors if the leaves
-    /// are not provided in DFS walk order. The depth of the root node is 0.
+    /// Adds a leaf script at `depth` to the builder with script version `ver`.
+    ///
+    /// The depth of the root node is 0.
+    ///
+    /// # Errors
+    ///
+    /// Errors if the leaves are not provided in DFS walk order.
     pub fn add_leaf_with_ver(
         self,
         depth: u8,
@@ -445,16 +446,26 @@ impl TaprootBuilder {
         self.insert(leaf, depth)
     }
 
-    /// Adds a leaf script at `depth` to the builder with default script version. Errors if the
-    /// leaves are not provided in DFS walk order. The depth of the root node is 0.
+    /// Adds a leaf script at `depth` to the builder with default script version.
+    ///
+    /// The depth of the root node is 0.
     ///
     /// See [`TaprootBuilder::add_leaf_with_ver`] for adding a leaf with specific version.
+    ///
+    /// # Errors
+    ///
+    /// Errors if the leaves are not provided in DFS walk order.
     pub fn add_leaf(self, depth: u8, script: ScriptBuf) -> Result<Self, TaprootBuilderError> {
         self.add_leaf_with_ver(depth, script, LeafVersion::TapScript)
     }
 
-    /// Adds a hidden/omitted node at `depth` to the builder. Errors if the leaves are not provided
-    /// in DFS walk order. The depth of the root node is 0.
+    /// Adds a hidden/omitted node at `depth` to the builder.
+    ///
+    /// The depth of the root node is 0.
+    ///
+    /// # Errors
+    ///
+    /// Errors if the leaves are not provided in DFS walk order.
     pub fn add_hidden_node(
         self,
         depth: u8,
@@ -470,7 +481,7 @@ impl TaprootBuilder {
     /// Converts the builder into a [`NodeInfo`] if the builder is a full tree with possibly
     /// hidden nodes
     ///
-    /// # Errors:
+    /// # Errors
     ///
     /// [`IncompleteBuilderError::NotFinalized`] if the builder is not finalized. The builder
     /// can be restored by calling [`IncompleteBuilderError::into_builder`]

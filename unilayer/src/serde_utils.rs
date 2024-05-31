@@ -3,7 +3,6 @@
 //! Bitcoin/UniLayer serde utilities.
 //!
 //! This module is for special serde serializations.
-//!
 
 pub(crate) struct SerializeBytesAsHex<'a>(pub(crate) &'a [u8]);
 

@@ -35,6 +35,7 @@ pub use self::block::{MerkleBlock, MerkleBlockError, PartialMerkleTree};
 /// this method and should not be used again afterwards).
 ///
 /// # Returns
+///
 /// - `None` if `hashes` is empty. The merkle root of an empty tree of hashes is undefined.
 /// - `Some(hash)` if `hashes` contains one element. A single hash is by definition the merkle root.
 /// - `Some(merkle_root)` if length of `hashes` is greater than one.
@@ -53,6 +54,7 @@ where
 /// Calculates the merkle root of an iterator of *hashes*.
 ///
 /// # Returns
+///
 /// - `None` if `hashes` is empty. The merkle root of an empty tree of hashes is undefined.
 /// - `Some(hash)` if `hashes` contains one element. A single hash is by definition the merkle root.
 /// - `Some(merkle_root)` if length of `hashes` is greater than one.
@@ -127,7 +129,7 @@ mod tests {
 
         let hashes_iter = block.txdata.iter().map(|obj| obj.compute_txid().to_raw_hash());
 
-        let mut hashes_array: [sha256d::Hash; 15] = [Hash::all_zeros(); 15];
+        let mut hashes_array = [sha256d::Hash::all_zeros(); 15];
         for (i, hash) in hashes_iter.clone().enumerate() {
             hashes_array[i] = hash;
         }

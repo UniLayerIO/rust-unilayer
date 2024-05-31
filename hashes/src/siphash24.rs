@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
 
 //! SipHash 2-4 implementation.
-//!
 
 use core::ops::Index;
 use core::slice::SliceIndex;
-use core::{cmp, mem, ptr, str};
+use core::{cmp, mem, ptr};
 
 use crate::{FromSliceError, Hash as _, HashEngine as _};
 

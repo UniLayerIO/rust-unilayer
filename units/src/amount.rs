@@ -27,6 +27,7 @@ use internals::write_err;
 ///
 /// Added prefix Atto- for the lowest denomination: AttoULR(aULR) or 1e-18 ULR
 /// # Examples
+///
 /// ```
 /// # use core::str::FromStr;
 /// # use unilayer_units::Amount;
@@ -381,9 +382,12 @@ pub struct TooPreciseError {
 impl fmt::Display for TooPreciseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.position {
-            0 => f.write_str("the amount is less than 1 aULR but it's not zero"),
-            pos =>
-                write!(f, "the digits starting from position {} represent a sub-aULR amount", pos),
+            0 => f.write_str("the amount is less than 1 satoshi but it's not zero"),
+            pos => write!(
+                f,
+                "the digits starting from position {} represent a sub-satoshi amount",
+                pos
+            ),
         }
     }
 }
@@ -920,7 +924,7 @@ impl Amount {
     /// Convert from a value expressing integer values of ULRs to an [Amount]
     /// in const context.
     ///
-    /// ## Panics
+    /// # Panics
     ///
     /// The function panics if the argument multiplied by the number of aULRs
     /// per ULR overflows a u128 type.
@@ -973,6 +977,7 @@ impl Amount {
     /// Please be aware of the risk of using floating-point numbers.
     ///
     /// # Examples
+    ///
     /// ```
     /// # use unilayer_units::amount::{Amount, Denomination};
     /// let amount = Amount::from_sat(100_000);
@@ -1080,12 +1085,20 @@ impl Amount {
 
     /// Unchecked addition.
     ///
-    /// Computes `self + rhs`.  Panics in debug mode, wraps in release mode.
+    /// Computes `self + rhs`.
+    ///
+    /// # Panics
+    ///
+    /// On overflow, panics in debug mode, wraps in release mode.
     pub fn unchecked_add(self, rhs: Amount) -> Amount { Self(self.0 + rhs.0) }
 
     /// Unchecked subtraction.
     ///
-    /// Computes `self - rhs`.  Panics in debug mode, wraps in release mode.
+    /// Computes `self - rhs`.
+    ///
+    /// # Panics
+    ///
+    /// On overflow, panics in debug mode, wraps in release mode.
     pub fn unchecked_sub(self, rhs: Amount) -> Amount { Self(self.0 - rhs.0) }
 
     /// Convert to a signed amount.
@@ -1310,13 +1323,13 @@ impl SignedAmount {
     pub fn from_str_in(s: &str, denom: Denomination) -> Result<SignedAmount, ParseAmountError> {
         match parse_signed_to_satoshi(s, denom).map_err(|error| error.convert(true))? {
             // (negative, amount)
-            (false, a_ulr) if a_ulr > i128::MAX as u128 =>
+            (false, sat) if sat > u128::MAX as u128 =>
                 Err(ParseAmountError::OutOfRange(OutOfRangeError::too_big(true))),
-            (false, a_ulr) => Ok(SignedAmount(a_ulr as i128)),
-            (true, a_ulr) if a_ulr == i128::MIN.unsigned_abs() => Ok(SignedAmount(i128::MIN)),
-            (true, a_ulr) if a_ulr > i128::MIN.unsigned_abs() =>
+            (false, sat) => Ok(SignedAmount(sat as u128)),
+            (true, sat) if sat == u128::MIN.unsigned_abs() => Ok(SignedAmount(u128::MIN)),
+            (true, sat) if sat > u128::MIN.unsigned_abs() =>
                 Err(ParseAmountError::OutOfRange(OutOfRangeError::too_small())),
-            (true, a_ulr) => Ok(SignedAmount(-(a_ulr as i128))),
+            (true, sat) => Ok(SignedAmount(-(sat as u128))),
         }
     }
 
@@ -1470,12 +1483,20 @@ impl SignedAmount {
 
     /// Unchecked addition.
     ///
-    /// Computes `self + rhs`.  Panics in debug mode, wraps in release mode.
+    /// Computes `self + rhs`.
+    ///
+    /// # Panics
+    ///
+    /// On overflow, panics in debug mode, wraps in release mode.
     pub fn unchecked_add(self, rhs: SignedAmount) -> SignedAmount { Self(self.0 + rhs.0) }
 
     /// Unchecked subtraction.
     ///
-    /// Computes `self - rhs`.  Panics in debug mode, wraps in release mode.
+    /// Computes `self - rhs`.
+    ///
+    /// # Panics
+    ///
+    /// On overflow, panics in debug mode, wraps in release mode.
     pub fn unchecked_sub(self, rhs: SignedAmount) -> SignedAmount { Self(self.0 - rhs.0) }
 
     /// Subtraction that doesn't allow negative [SignedAmount]s.
@@ -1783,7 +1804,6 @@ pub mod serde {
     pub mod as_sat {
         //! Serialize and deserialize [`Amount`](crate::Amount) as real numbers denominated in AttoULRs.
         //! Use with `#[serde(with = "amount::serde::as_sat")]`.
-        //!
         use serde::{Deserializer, Serializer};
 
         use super::private;
@@ -1924,7 +1944,6 @@ pub mod serde {
 #[cfg(kani)]
 mod verification {
     use std::cmp;
-    use std::convert::TryInto;
 
     use super::*;
 
@@ -1942,7 +1961,7 @@ mod verification {
     // CI it fails, so we need to set it higher.
     #[kani::unwind(4)]
     #[kani::proof]
-    fn u_amount_add_homomorphic() {
+    fn u_amount_homomorphic() {
         let n1 = kani::any::<u128>();
         let n2 = kani::any::<u128>();
         kani::assume(n1.checked_add(n2).is_some()); // assume we don't overflow in the actual test
@@ -1972,7 +1991,7 @@ mod verification {
 
     #[kani::unwind(4)]
     #[kani::proof]
-    fn u_amount_add_homomorphic_checked() {
+    fn u_amount_homomorphic_checked() {
         let n1 = kani::any::<u128>();
         let n2 = kani::any::<u128>();
         assert_eq!(
@@ -1987,7 +2006,7 @@ mod verification {
 
     #[kani::unwind(4)]
     #[kani::proof]
-    fn s_amount_add_homomorphic() {
+    fn s_amount_homomorphic() {
         let n1 = kani::any::<i128>();
         let n2 = kani::any::<i128>();
         kani::assume(n1.checked_add(n2).is_some()); // assume we don't overflow in the actual test
@@ -2013,14 +2032,14 @@ mod verification {
             if n1 >= 0 {
                 Ok(Amount::from_sat(n1.try_into().unwrap()))
             } else {
-                Err(OutOfRangeError { is_signed: true, is_greater_than_max: false })
+                Err(OutOfRangeError { is_signed: false, is_greater_than_max: false })
             },
         );
     }
 
     #[kani::unwind(4)]
     #[kani::proof]
-    fn s_amount_add_homomorphic_checked() {
+    fn s_amount_homomorphic_checked() {
         let n1 = kani::any::<i128>();
         let n2 = kani::any::<i128>();
         assert_eq!(

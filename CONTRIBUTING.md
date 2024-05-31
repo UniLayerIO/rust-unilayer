@@ -143,7 +143,7 @@ grammar fixes.
 
 Pull request merge requirements:
 - all CI test should pass,
-- at least two "accepts"/ACKs from the repository maintainers (see "refactor carve-out").
+- at least one "accepts"/ACKs from the repository maintainers
 - no reasonable "rejects"/NACKs from anybody who reviewed the code.
 
 Current list of the project maintainers:
@@ -157,32 +157,19 @@ Current list of the project maintainers:
 - [Riccardo Casatta](https://github.com/RCasatta)
 - [Tobin Harding](https://github.com/tcharding)
 
-#### Refactor carve-out
+#### Backporting
 
-The repository is going through heavy refactoring and "trivial" API redesign
-(eg, rename `Foo::empty` to `Foo::new`) as we push towards API stabilization. As
-such reviewers are either bored or overloaded with notifications, hence we have
-created a carve out to the 2-ACK rule.
+We maintain release branches (e.g. `0.32.x` for the `v0.32` releases).
 
-A PR may be considered for merge if it has a single ACK and has sat open for at
-least two weeks with no comments, questions, or NACKs.
+In order to backport changes to these branches the process we use is as follows:
 
-#### One ACK carve-out
+- PR change into `master`.
+- Mark the PR with the appropriate labels if backporting is needed (e.g. `port-0.32.x`).
+- Once PR merges create another PR that targets the appropriate branch.
+- If, and only if, the backport PR is identical to the original PR (i.e. created using
+  `git cherry-pick`) then the PR may be one-ACK merged.
 
-We reserve the right to merge PRs with a single ACK [0], at any time, if they match
-any of the following conditions:
-
-1. PR only touches CI i.e, only changes any of the `test.sh` scripts and/or
-   stuff in `.github/workflows`.
-2. Non-content changing documentation fixes i.e., grammar/typos, spelling, full
-   stops, capital letters. Any change with more substance must still get two
-   ACKs.
-3. Code moves that do not change the API e.g., moving error types to a private
-   submodule and re-exporting them from the original module. Must not include
-   any code changes except to import paths. This rule is more restrictive than
-   the refactor carve-out. It requires absolutely no change to the public API.
-
-[0] - Obviously author and ACK'er must not be the same person.
+Any other changes to the release branches should follow the normal 2-ACK merge policy.
 
 ## Coding conventions
 
@@ -214,6 +201,11 @@ Use of `unsafe` code is prohibited unless there is a unanimous decision among
 library maintainers on the exclusion from this rule. In such cases there is a
 requirement to test unsafe code with sanitizers including Miri.
 
+### API changes
+
+All PRs that change the public API of `rust-bitcoin` must include a patch to
+the `api/` text files. This should be a separate, final patch to the PR
+that is the diff created by running `./contrib/check-for-api-changes.sh`.
 
 ### Policy
 
@@ -302,8 +294,9 @@ More specifically an error should
 - have private fields unless we are very confident they won't change.
 - derive `Debug, Clone, PartialEq, Eq` (and `Copy` iff not `non_exhaustive`).
 - implement Display using `write_err!()` macro if a variant contains an inner error source.
-- have `Error` suffix
-- call `internals::impl_from_infallible!
+- have `Error` suffix on error types (structs and enums).
+- not have `Error` suffix on enum variants.
+- call `internals::impl_from_infallible!`.
 - implement `std::error::Error` if they are public (feature gated on "std").
 
 ```rust
@@ -321,6 +314,8 @@ internals::impl_from_infallible!(Error);
 
 ```
 
+All errors that live in an `error` module (eg, `foo/error.rs`) and appear in a public function in
+`foo` module should be available from `foo` i.e., should be re-exported from `foo/mod.rs`.
 
 #### Rustdocs
 

@@ -13,9 +13,8 @@
 //! course, but has some critical differences from the network format e.g.,
 //! scripts come with an opcode decode, hashes are big-endian, numbers are
 //! typically big-endian decimals, etc.)
-//!
 
-use core::{fmt, mem, u32};
+use core::{fmt, mem};
 
 use hashes::{sha256, sha256d, Hash};
 use hex::error::{InvalidCharError, OddLengthStringError};

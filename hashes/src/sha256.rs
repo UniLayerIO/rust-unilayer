@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: CC0-1.0
 
 //! SHA256 implementation.
-//!
 
 #[cfg(all(feature = "std", target_arch = "x86"))]
 use core::arch::x86::*;
 #[cfg(all(feature = "std", target_arch = "x86_64"))]
 use core::arch::x86_64::*;
+use core::cmp;
 use core::ops::Index;
 use core::slice::SliceIndex;
-use core::{cmp, str};
 
 use crate::{sha256d, FromSliceError, HashEngine as _};
 
@@ -126,7 +125,7 @@ impl<I: SliceIndex<[u8]>> Index<I> for Midstate {
     fn index(&self, index: I) -> &Self::Output { &self.0[index] }
 }
 
-impl str::FromStr for Midstate {
+impl core::str::FromStr for Midstate {
     type Err = hex::HexToArrayError;
     fn from_str(s: &str) -> Result<Self, Self::Err> { hex::FromHex::from_hex(s) }
 }
@@ -1027,10 +1026,9 @@ mod tests {
 
     #[cfg(target_arch = "wasm32")]
     mod wasm_tests {
-        extern crate wasm_bindgen_test;
-        use self::wasm_bindgen_test::*;
         use super::*;
-        #[wasm_bindgen_test]
+        #[test]
+        #[wasm_bindgen_test::wasm_bindgen_test]
         fn sha256_tests() {
             test();
             midstate();

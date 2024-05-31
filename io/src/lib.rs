@@ -16,6 +16,7 @@
 // Exclude lints we don't think are valuable.
 #![allow(clippy::needless_question_mark)] // https://github.com/rust-bitcoin/rust-bitcoin/pull/2134
 #![allow(clippy::manual_range_contains)] // More readable than clippy's format.
+#![allow(clippy::needless_borrows_for_generic_args)] // https://github.com/rust-lang/rust-clippy/issues/12454
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -210,8 +211,7 @@ impl<T: AsRef<[u8]>> Read for Cursor<T> {
         let start_pos = self.pos.try_into().unwrap_or(inner.len());
         let read = core::cmp::min(inner.len().saturating_sub(start_pos), buf.len());
         buf[..read].copy_from_slice(&inner[start_pos..start_pos + read]);
-        self.pos =
-            self.pos.saturating_add(read.try_into().unwrap_or(u64::max_value() /* unreachable */));
+        self.pos = self.pos.saturating_add(read.try_into().unwrap_or(u64::MAX /* unreachable */));
         Ok(read)
     }
 }

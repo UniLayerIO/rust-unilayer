@@ -9,7 +9,7 @@
 //! While the constants present in this module are very unlikely to change, they do not define
 //! Bitcoin or UniLayer Network. As such they must not be relied upon as if they were consensus rules.
 //!
-//! These values were taken from ulrd v1.0.1 (194b9b8792d9b0798fdb570b79fa51f1d1f5ebaf).
+//! These values were taken from ulrd v1.1.1 (194b9b8792d9b0798fdb570b79fa51f1d1f5ebaf).
 //!
 
 use core::cmp;
@@ -21,7 +21,7 @@ pub const MAX_STANDARD_TX_WEIGHT: u32 = 400_000;
 
 /// Minimum non-witness size for a standard transaction (1 segwit input + 1 P2WPKH output = 80 bytes)
 /// Amount encoded by varint could take 2 bytes
-pub const MIN_STANDARD_TX_NONWITNESS_SIZE: u32 = 80;
+pub const MIN_STANDARD_TX_NONWITNESS_SIZE: u32 = 82;
 
 /// Maximum number of sigops in a standard tx.
 pub const MAX_STANDARD_TX_SIGOPS_COST: u32 = MAX_BLOCK_SIGOPS_COST as u32 / 5;

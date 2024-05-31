@@ -677,8 +677,8 @@ impl Address<NetworkUnchecked> {
     ///  # Examples
     ///
     /// ```
-    /// use bitcoin::address::{NetworkChecked, NetworkUnchecked, ParseError};
-    /// use bitcoin::{Address, Network};
+    /// use unilayer::address::{NetworkChecked, NetworkUnchecked, ParseError};
+    /// use unilayer::{Address, Network};
     ///
     /// const ADDR: &str = "bc1zw508d6qejxtdg4y5r3zarvaryvaxxpcs";
     ///
@@ -700,7 +700,7 @@ impl Address<NetworkUnchecked> {
     ///     Ok(address)
     /// }
     ///
-    /// let network = Network::Bitcoin;  // Don't hard code network in applications.
+    /// let network = Network::UniLayer;  // Don't hard code network in applications.
     /// let _ = parse_and_validate_address(network).unwrap();
     /// let _ = parse_and_validate_address_combinator(network).unwrap();
     /// let _ = parse_and_validate_address_show_types(network).unwrap();
@@ -948,7 +948,7 @@ mod tests {
         let addr = Address::p2shwsh(&script, NetworkKind::Main);
         assert_eq!(&addr.to_string(), "36EqgNnsWW94SreZgBWc1ANC6wpFZwirHr");
         assert_eq!(addr.address_type(), Some(AddressType::P2sh));
-        roundtrips(&addr, UniLayer);
+        roundtrips(&addr, Bitcoin);
     }
 
     #[test]
@@ -960,7 +960,7 @@ mod tests {
         let program = WitnessProgram::new(WitnessVersion::V13, &program).expect("valid program");
 
         let addr = Address::from_witness_program(program, KnownHrp::Mainnet);
-        roundtrips(&addr, UniLayer);
+        roundtrips(&addr, Bitcoin);
     }
 
     #[test]
@@ -1132,7 +1132,7 @@ mod tests {
             "bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr"
         );
         assert_eq!(address.address_type(), Some(AddressType::P2tr));
-        roundtrips(&address, UniLayer);
+        roundtrips(&address, Bitcoin);
     }
 
     #[test]

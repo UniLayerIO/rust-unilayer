@@ -3,7 +3,7 @@
 //! # Rust UniLayer Library
 //!
 //! This is a library that supports the Bitcoin/UniLayer network protocol and associated
-//! primitives. It is designed for Rust programs built to work with the Bitcoin/UniLayer
+//! primitives. It is designed for Rust programs built to work with the Bitcoin
 //! network.
 //!
 //! Except for its dependency on libsecp256k1 (and optionally libbitcoinconsensus),
@@ -29,13 +29,17 @@
 //!                            happen the implementations diverge one day.
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
+
 // Experimental features we need.
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(bench, feature(test))]
+
 // Coding conventions.
 #![warn(missing_docs)]
+
 // Instead of littering the codebase for non-fuzzing code just globally allow.
 #![cfg_attr(fuzzing, allow(dead_code, unused_imports))]
+
 // Exclude lints we don't think are valuable.
 #![allow(clippy::needless_question_mark)] // https://github.com/rust-bitcoin/rust-bitcoin/pull/2134
 #![allow(clippy::manual_range_contains)] // More readable than clippy's format.
@@ -57,7 +61,7 @@ extern crate alloc;
 /// Encodes and decodes base64 as bytes or utf8.
 pub extern crate base64;
 
-/// UniLayer base58 encoding and decoding.
+/// unilayer base58 encoding and decoding.
 pub extern crate base58;
 
 /// Rust implementation of cryptographic hash function algorithms.

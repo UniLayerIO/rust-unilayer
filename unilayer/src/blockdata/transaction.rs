@@ -9,14 +9,13 @@
 //! signatures ensures that coins cannot be spent by unauthorized parties.
 //!
 //! This module provides the structures and functions needed to support transactions.
-//!
 
 use core::{cmp, fmt, str};
 
 use hashes::{sha256d, Hash};
 use internals::write_err;
 use io::{BufRead, Write};
-use units::parse;
+use units::parse::{self, PrefixedHexError, UnprefixedHexError};
 
 use super::Weight;
 use crate::blockdata::locktime::absolute::{self, Height, Time};
@@ -25,7 +24,6 @@ use crate::blockdata::script::{Script, ScriptBuf};
 use crate::blockdata::witness::Witness;
 use crate::blockdata::FeeRate;
 use crate::consensus::{encode, Decodable, Encodable};
-use crate::error::{ContainsPrefixError, MissingPrefixError, PrefixedHexError, UnprefixedHexError};
 use crate::internal_macros::{impl_consensus_encoding, impl_hashencode};
 use crate::prelude::*;
 #[cfg(doc)]
@@ -89,13 +87,14 @@ impl OutPoint {
     ///
     /// This value is used for coinbase transactions because they don't have any previous outputs.
     #[inline]
-    pub fn null() -> OutPoint { OutPoint { txid: Hash::all_zeros(), vout: u32::MAX } }
+    pub fn null() -> OutPoint { OutPoint { txid: Txid::all_zeros(), vout: u32::MAX } }
 
     /// Checks if an `OutPoint` is "null".
     ///
     /// # Examples
     ///
     /// ```rust
+    /// use unilayer::consensus::params;
     /// use unilayer::constants::genesis_block;
     /// use unilayer::Network;
     ///
@@ -126,7 +125,7 @@ pub enum ParseOutPointError {
     /// Error in TXID part.
     Txid(hex::HexToArrayError),
     /// Error in vout part.
-    Vout(crate::error::ParseIntError),
+    Vout(parse::ParseIntError),
     /// Error in general format.
     Format,
     /// Size exceeds max.
@@ -410,26 +409,15 @@ impl Sequence {
         self.is_relative_lock_time() & (self.0 & Sequence::LOCK_TYPE_MASK > 0)
     }
 
-    /// Creates a `Sequence` from an prefixed hex string.
+    /// Creates a `Sequence` from a prefixed hex string.
     pub fn from_hex(s: &str) -> Result<Self, PrefixedHexError> {
-        let stripped = if let Some(stripped) = s.strip_prefix("0x") {
-            stripped
-        } else if let Some(stripped) = s.strip_prefix("0X") {
-            stripped
-        } else {
-            return Err(MissingPrefixError::new(s).into());
-        };
-
-        let sequence = parse::hex_u32(stripped)?;
-        Ok(Self::from_consensus(sequence))
+        let lock_time = parse::hex_u32_prefixed(s)?;
+        Ok(Self::from_consensus(lock_time))
     }
 
     /// Creates a `Sequence` from an unprefixed hex string.
     pub fn from_unprefixed_hex(s: &str) -> Result<Self, UnprefixedHexError> {
-        if s.starts_with("0x") || s.starts_with("0X") {
-            return Err(ContainsPrefixError::new(s).into());
-        }
-        let lock_time = parse::hex_u32(s)?;
+        let lock_time = parse::hex_u32_unprefixed(s)?;
         Ok(Self::from_consensus(lock_time))
     }
 
@@ -1647,7 +1635,7 @@ impl From<&Transaction> for Wtxid {
 /// a [`TxOut`] when adding another [`TxOut`] to the transaction.  This happens when the new
 /// [`TxOut`] added causes the output length `CompactSize` to increase its encoding length.
 ///
-/// # Arguments
+/// # Parameters
 ///
 /// * `fee_rate` - the fee rate of the transaction being created.
 /// * `satisfaction_weight` - satisfied spending conditions weight.
@@ -1666,7 +1654,7 @@ pub fn effective_value(
 /// This function computes the weight of a transaction which is not fully known. All that is needed
 /// is the lengths of scripts and witness elements.
 ///
-/// # Arguments
+/// # Parameters
 ///
 /// * `inputs` - an iterator which returns `InputWeightPrediction` for each input of the
 ///   to-be-constructed transaction.
@@ -2812,7 +2800,7 @@ mod tests {
 
 #[cfg(bench)]
 mod benches {
-    use hex_lit::hex;
+    use hex::test_hex_unwrap as hex;
     use io::sink;
     use test::{black_box, Bencher};
 

@@ -191,6 +191,7 @@ impl Decodable for MerkleBlock {
 ///  - uint256[]  hashes in depth-first order (<= 32*N bytes)
 ///  - compactsize     number of bytes of flag bits (1-3 bytes)
 ///  - byte[]     flag bits, packed per 8 in a byte, least significant bit first (<= 2*N-1 bits)
+///
 /// The size constraints follow from this.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct PartialMerkleTree {
@@ -215,6 +216,8 @@ impl PartialMerkleTree {
     /// Construct a partial merkle tree
     /// The `txids` are the transaction hashes of the block and the `matches` is the contains flags
     /// wherever a tx hash should be included in the proof.
+    ///
+    /// # Panics
     ///
     /// Panics when `txids` is empty or when `matches` has a different length
     ///

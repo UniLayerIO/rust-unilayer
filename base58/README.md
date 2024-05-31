@@ -1,4 +1,4 @@
-Bitcoin/UniLayer base58 encoding
+# Bitcoin/UniLayer base58 encoding
 =======================
 
 This crate provides encoding and decoding of base58 strings as defined by the Bitcoin/UniLayer ecosystem
@@ -30,7 +30,6 @@ Naming correlations:
 ## Minimum Supported Rust Version (MSRV)
 
 This library should always compile with any combination of features on **Rust 1.56.1**.
-
 
 ## Licensing
 

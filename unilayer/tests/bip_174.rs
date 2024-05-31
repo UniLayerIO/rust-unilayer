@@ -320,8 +320,7 @@ fn parse_and_verify_keys(
 
         let path =
             derivation_path.into_derivation_path().expect("failed to convert derivation path");
-        let derived_priv =
-            ext_priv.derive_priv(secp, &path).expect("failed to derive ext priv key").to_priv();
+        let derived_priv = ext_priv.derive_priv(secp, &path).to_priv();
         assert_eq!(wif_priv, derived_priv);
         let derived_pub = derived_priv.public_key(secp);
         key_map.insert(derived_pub, derived_priv);
@@ -456,8 +455,8 @@ fn finalize_psbt(mut psbt: Psbt) -> Psbt {
         let sigs: Vec<_> = psbt.inputs[1].partial_sigs.values().collect();
         let mut script_witness = Witness::new();
         script_witness.push([]); // Push 0x00 to the stack.
-        script_witness.push(&sigs[1].to_vec());
-        script_witness.push(&sigs[0].to_vec());
+        script_witness.push(sigs[1].serialize());
+        script_witness.push(sigs[0].serialize());
         script_witness.push(psbt.inputs[1].witness_script.clone().unwrap().as_bytes());
 
         script_witness

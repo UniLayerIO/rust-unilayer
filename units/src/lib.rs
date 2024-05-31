@@ -11,6 +11,7 @@
 // Exclude lints we don't think are valuable.
 #![allow(clippy::needless_question_mark)] // https://github.com/rust-bitcoin/rust-bitcoin/pull/2134
 #![allow(clippy::manual_range_contains)] // More readable than clippy's format.
+#![allow(clippy::needless_borrows_for_generic_args)] // https://github.com/rust-lang/rust-clippy/issues/12454
 #![no_std]
 
 // Disable 16-bit support at least for now as we can't guarantee it yet.
@@ -36,6 +37,8 @@ mod test_macros;
 
 pub mod amount;
 #[cfg(feature = "alloc")]
+pub mod block;
+#[cfg(feature = "alloc")]
 pub mod fee_rate;
 #[cfg(feature = "alloc")]
 pub mod locktime;
@@ -45,9 +48,17 @@ pub mod parse;
 pub mod weight;
 
 #[doc(inline)]
-pub use self::amount::{Amount, ParseAmountError, SignedAmount};
+pub use self::amount::{Amount, SignedAmount};
 #[cfg(feature = "alloc")]
-pub use self::parse::ParseIntError;
+#[doc(inline)]
+#[rustfmt::skip]
+pub use self::{
+    block::{BlockHeight, BlockInterval},
+    fee_rate::FeeRate,
+    // ParseIntError is used by other modules, so we re-export it.
+    parse::ParseIntError,
+    weight::Weight
+};
 
 #[rustfmt::skip]
 #[allow(unused_imports)]

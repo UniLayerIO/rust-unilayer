@@ -13,7 +13,7 @@ use hashes::{sha256, siphash24, Hash};
 use internals::impl_array_newtype;
 use io::{BufRead, Write};
 
-use crate::consensus::encode::{self, CompactSize, Decodable, Encodable};
+use crate::consensus::encode::{self, CompactSize, Decodable, Encodable, VarInt};
 use crate::internal_macros::{impl_bytes_newtype, impl_consensus_encoding};
 use crate::prelude::*;
 use crate::{block, Block, BlockHash, Transaction};
@@ -279,7 +279,7 @@ impl Decodable for BlockTransactionsRequest {
             block_hash: BlockHash::consensus_decode(r)?,
             indexes: {
                 // Manually decode indexes because they are differentially encoded CompactSizes.
-                let nb_indexes = CompactSize::consensus_decode(r)?.0 as usize;
+                let nb_indexes = CompactSizes::consensus_decode(r)?.0 as usize;
 
                 // Since the number of indices ultimately represent transactions,
                 // we can limit the number of indices to the maximum number of
@@ -297,7 +297,7 @@ impl Decodable for BlockTransactionsRequest {
                 let mut indexes = Vec::with_capacity(nb_indexes);
                 let mut last_index: u64 = 0;
                 for _ in 0..nb_indexes {
-                    let differential: CompactSize = Decodable::consensus_decode(r)?;
+                    let differential: CompactSizes = Decodable::consensus_decode(r)?;
                     last_index = match last_index.checked_add(differential.0) {
                         Some(i) => i,
                         None => return Err(encode::Error::ParseFailed("block index overflow")),
@@ -379,7 +379,10 @@ mod test {
     use crate::blockdata::locktime::absolute;
     use crate::blockdata::transaction;
     use crate::consensus::encode::{deserialize, serialize};
-    use crate::{Amount, CompactTarget, OutPoint, ScriptBuf, Sequence, TxIn, TxOut, Txid, Witness};
+    use crate::{
+        Amount, CompactTarget, OutPoint, ScriptBuf, Sequence, TxIn, TxOut, Txid,
+        Witness,
+    };
 
     fn dummy_tx(nonce: &[u8]) -> Transaction {
         Transaction {

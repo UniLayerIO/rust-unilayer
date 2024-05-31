@@ -12,8 +12,7 @@
 //! Hashing a single byte slice or a string:
 //!
 //! ```rust
-//! use unilayer_hashes::sha256;
-//! use unilayer_hashes::Hash;
+//! use unilayer_hashes::{sha256, Hash as _};
 //!
 //! let bytes = [0u8; 5];
 //! let hash_of_bytes = sha256::Hash::hash(&bytes);
@@ -24,8 +23,7 @@
 //! Hashing content from a reader:
 //!
 //! ```rust
-//! use unilayer_hashes::sha256;
-//! use unilayer_hashes::Hash;
+//! use unilayer_hashes::{sha256, Hash as _};
 //!
 //! #[cfg(std)]
 //! # fn main() -> std::io::Result<()> {
@@ -44,8 +42,7 @@
 //! Hashing content by [`std::io::Write`] on HashEngine:
 //!
 //! ```rust
-//! use unilayer_hashes::sha256;
-//! use unilayer_hashes::Hash;
+//! use unilayer_hashes::{sha256, Hash as _};
 //! use std::io::Write;
 //!
 //! #[cfg(std)]
@@ -76,6 +73,7 @@
 // Exclude lints we don't think are valuable.
 #![allow(clippy::needless_question_mark)] // https://github.com/rust-bitcoin/rust-bitcoin/pull/2134
 #![allow(clippy::manual_range_contains)] // More readable than clippy's format.
+#![allow(clippy::needless_borrows_for_generic_args)] // https://github.com/rust-lang/rust-clippy/issues/12454
 
 #[cfg(all(feature = "alloc", not(feature = "std")))]
 extern crate alloc;
@@ -125,7 +123,7 @@ pub mod sha512;
 pub mod sha512_256;
 pub mod siphash24;
 
-use core::{borrow, fmt, hash, ops};
+use core::{convert, fmt, hash};
 
 pub use hmac::{Hmac, HmacEngine};
 
@@ -160,12 +158,7 @@ pub trait Hash:
     + fmt::Debug
     + fmt::Display
     + fmt::LowerHex
-    + ops::Index<ops::RangeFull, Output = [u8]>
-    + ops::Index<ops::RangeFrom<usize>, Output = [u8]>
-    + ops::Index<ops::RangeTo<usize>, Output = [u8]>
-    + ops::Index<ops::Range<usize>, Output = [u8]>
-    + ops::Index<usize, Output = u8>
-    + borrow::Borrow<[u8]>
+    + convert::AsRef<[u8]>
 {
     /// A hashing engine which bytes can be serialized into. It is expected
     /// to implement the `io::Write` trait, and to never return errors under

@@ -4,7 +4,7 @@
 
 // Step 0 - Wipe the `regtest` data directory to start from a clean slate.
 
-// Step 1 - Run `ulrd -regtest -daemon` to start the daemon. UniLayer Core 1.0+ is required.
+// Step 1 - Run `ulrd -regtest -daemon` to start the daemon. UniLayer Core 1.1+ is required.
 
 // Step 2 -
 //          2.1) Run `bt -named createwallet wallet_name=benefactor blank=true` to create a blank wallet with the name "benefactor"
@@ -423,7 +423,6 @@ impl BenefactorWallet {
             vec![TxOut { script_pubkey: script_pubkey.clone(), value }],
         )?;
 
-        // CREATOR + UPDATER
         let next_tx = Transaction {
             version: transaction::Version::TWO,
             lock_time,

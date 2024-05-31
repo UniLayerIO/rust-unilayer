@@ -5,8 +5,71 @@
 //! This module provides a predefined set of parameters for different UniLayer
 //! chains (such as mainnet, testnet).
 //!
+//! # Custom Signets Example
+//!
+//! In various places in this crate we take `AsRef<Params>` as a parameter, in order to create a
+//! custom type that can be used is such places you might want to do the following:
+//!
+//! ```
+//! use bitcoin::consensus::Params;
+//! use bitcoin::{p2p, Script, ScriptBuf, Network, Target};
+//!
+//! const POW_TARGET_SPACING: u64 = 120; // Two minutes.
+//! const MAGIC: [u8; 4] = [1, 2, 3, 4];
+//!
+//! pub struct CustomParams {
+//!     params: Params,
+//!     magic: [u8; 4],
+//!     challenge_script: ScriptBuf,
+//! }
+//!
+//! impl CustomParams {
+//!     /// Creates a new custom params.
+//!     pub fn new() -> Self {
+//!         let mut params = Params::new(Network::Signet);
+//!         params.pow_target_spacing = POW_TARGET_SPACING;
+//!
+//!         // This would be something real (see BIP-325).
+//!         let challenge_script = ScriptBuf::new();
+//!
+//!         Self {
+//!             params,
+//!             magic: MAGIC,
+//!             challenge_script,
+//!         }
+//!     }
+//!
+//!     /// Returns the custom magic bytes.
+//!     pub fn magic(&self) -> p2p::Magic { p2p::Magic::from_bytes(self.magic) }
+//!
+//!     /// Returns the custom signet challenge script.
+//!     pub fn challenge_script(&self) -> &Script { &self.challenge_script }
+//! }
+//!
+//! impl AsRef<Params> for CustomParams {
+//!     fn as_ref(&self) -> &Params { &self.params }
+//! }
+//!
+//! impl Default for CustomParams {
+//!     fn default() -> Self { Self::new() }
+//! }
+//!
+//! # { // Just check the code above is usable.
+//! #    let target = Target::MAX_ATTAINABLE_SIGNET;
+//! #
+//! #    let signet = Params::SIGNET;
+//! #    let _ = target.difficulty(signet);
+//! #
+//! #    let custom = CustomParams::new();
+//! #    let _ = target.difficulty(custom);
+//! # }
+//! ```
+
+use units::{BlockHeight, BlockInterval};
 
 use crate::network::Network;
+#[cfg(doc)]
+use crate::pow::CompactTarget;
 use crate::pow::Target;
 
 /// Parameters that influence chain consensus.
@@ -19,18 +82,24 @@ pub struct Params {
     /// Time when BIP16 becomes active.
     pub bip16_time: u32,
     /// Block height at which BIP34 becomes active.
-    pub bip34_height: u32,
+    pub bip34_height: BlockHeight,
     /// Block height at which BIP65 becomes active.
-    pub bip65_height: u32,
+    pub bip65_height: BlockHeight,
     /// Block height at which BIP66 becomes active.
-    pub bip66_height: u32,
+    pub bip66_height: BlockHeight,
     /// Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
     /// (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
     /// Examples: 1916 for 95%, 1512 for testchains.
-    pub rule_change_activation_threshold: u32,
+    pub rule_change_activation_threshold: BlockInterval,
     /// Number of blocks with the same set of rules.
-    pub miner_confirmation_window: u32,
+    pub miner_confirmation_window: BlockInterval,
     /// Proof of work limit value. It contains the lowest possible difficulty.
+    #[deprecated(since = "0.32.0", note = "field renamed to max_attainable_target")]
+    pub pow_limit: Target,
+    /// The maximum **attainable** target value for these params.
+    ///
+    /// Not all target values are attainable because consensus code uses the compact format to
+    /// represent targets (see [`CompactTarget`]).
     ///
     /// Note that this value differs from Bitcoin Core's powLimit field in that this value is
     /// attainable, but Bitcoin Core's is not. Specifically, because targets in Bitcoin are always
@@ -38,7 +107,7 @@ pub struct Params {
     /// Still, this should not affect consensus as the only place where the non-compact form of
     /// this is used in Bitcoin Core's consensus algorithm is in comparison and there are no
     /// compact-expressible values between Bitcoin Core's and the limit expressed here.
-    pub pow_limit: Target,
+    pub max_attainable_target: Target,
     /// Expected amount of time to mine one block.
     pub pow_target_spacing: u64,
     /// Difficulty recalculation interval.
@@ -49,6 +118,22 @@ pub struct Params {
     pub no_pow_retargeting: bool,
 }
 
+/// The mainnet parameters.
+///
+/// Use this for a static reference e.g., `&params::MAINNET`.
+///
+/// For more on static vs const see The Rust Reference [using-statics-or-consts] section.
+///
+/// [using-statics-or-consts]: <https://doc.rust-lang.org/reference/items/static-items.html#using-statics-or-consts>
+pub static MAINNET: Params = Params::MAINNET;
+/// The testnet parameters.
+pub static TESTNET: Params = Params::TESTNET;
+/// The signet parameters.
+pub static SIGNET: Params = Params::SIGNET;
+/// The regtest parameters.
+pub static REGTEST: Params = Params::REGTEST;
+
+#[allow(deprecated)] // For `pow_limit`.
 impl Params {
     /// The mainnet parameters (alias for `Params::MAINNET`).
     pub const UNILAYER: Params = Params::MAINNET;
@@ -148,4 +233,19 @@ impl From<Network> for &'static Params {
 
 impl From<&Network> for &'static Params {
     fn from(value: &Network) -> Self { value.params() }
+}
+
+impl AsRef<Params> for Params {
+    fn as_ref(&self) -> &Params { self }
+}
+
+impl AsRef<Params> for Network {
+    fn as_ref(&self) -> &Params {
+        match *self {
+            Network::Bitcoin => &MAINNET,
+            Network::Testnet => &TESTNET,
+            Network::Signet => &SIGNET,
+            Network::Regtest => &REGTEST,
+        }
+    }
 }

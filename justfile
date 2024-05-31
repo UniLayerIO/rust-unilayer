@@ -11,11 +11,15 @@ check:
 
 # Lint everything.
 lint:
-  cargo +nightly clippy --workspace --all-targets --all-features -- --deny warnings
+  cargo +$(cat ./nightly-version) clippy --workspace --all-targets --all-features -- --deny warnings
+
+# Run cargo fmt
+fmt:
+  cargo +$(cat ./nightly-version) fmt --all
 
 # Check the formatting
 format:
-  cargo +nightly fmt --all --check
+  cargo +$(cat ./nightly-version) fmt --all --check
 
 # Quick and dirty CI useful for pre-push checks.
 sane: lint
@@ -32,3 +36,7 @@ sane: lint
 # Update the recent and minimal lock files.
 update-lock-files:
   contrib/update-lock-files.sh
+
+# Check for API changes.
+check-api:
+ contrib/check-for-api-changes.sh

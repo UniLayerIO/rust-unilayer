@@ -6,7 +6,9 @@ use core::fmt;
 
 use internals::write_err;
 
-use crate::parse::{self, ParseIntError};
+#[cfg(feature = "alloc")]
+use crate::parse;
+use crate::parse::ParseIntError;
 #[cfg(feature = "alloc")]
 use crate::prelude::*;
 
@@ -52,6 +54,7 @@ impl Height {
     /// If `n` does not represent a valid block height value.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// use unilayer_units::locktime::absolute::Height;
     ///
@@ -133,7 +136,7 @@ impl Time {
     pub const MIN: Self = Time(LOCK_TIME_THRESHOLD);
 
     /// The maximum absolute block time (Sun Feb 07 2106 06:28:15 GMT+0000).
-    pub const MAX: Self = Time(u32::max_value());
+    pub const MAX: Self = Time(u32::MAX);
 
     /// Creates a `Time` from a hex string.
     ///
@@ -147,6 +150,7 @@ impl Time {
     /// If `n` does not encode a valid UNIX time stamp.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// use unilayer_units::locktime::absolute::Time;
     ///
@@ -234,7 +238,7 @@ where
     S: AsRef<str> + Into<String>,
     F: FnOnce(u32) -> Result<T, ConversionError>,
 {
-    let n = i64::from_str_radix(parse::strip_hex_prefix(s.as_ref()), 16)
+    let n = i64::from_str_radix(parse::hex_remove_optional_prefix(s.as_ref()), 16)
         .map_err(ParseError::invalid_int(s))?;
     let n = u32::try_from(n).map_err(|_| ParseError::Conversion(n))?;
     f(n).map_err(ParseError::from).map_err(Into::into)

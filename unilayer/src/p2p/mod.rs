@@ -28,6 +28,7 @@ use internals::{debug_from_display, write_err};
 use io::{BufRead, Write};
 
 use crate::consensus::encode::{self, Decodable, Encodable};
+use crate::consensus::Params;
 use crate::prelude::*;
 use crate::Network;
 
@@ -223,10 +224,13 @@ impl Magic {
     pub const REGTEST: Self = Self([0x55, 0x6e, 0x69, 0x70]);
 
     /// Create network magic from bytes.
-    pub fn from_bytes(bytes: [u8; 4]) -> Magic { Magic(bytes) }
+    pub const fn from_bytes(bytes: [u8; 4]) -> Magic { Magic(bytes) }
 
     /// Get network magic bytes.
     pub fn to_bytes(self) -> [u8; 4] { self.0 }
+
+    /// Returns the magic bytes for the network defined by `params`.
+    pub fn from_params(params: impl AsRef<Params>) -> Self { params.as_ref().network.into() }
 }
 
 impl FromStr for Magic {

@@ -4,7 +4,6 @@
 //!
 //! There are two types of lock time: lock-by-blockheight and lock-by-blocktime, distinguished by
 //! whether `LockTime < LOCKTIME_THRESHOLD`.
-//!
 
 use core::cmp::Ordering;
 use core::fmt;
@@ -12,12 +11,11 @@ use core::fmt;
 use io::{BufRead, Write};
 #[cfg(all(test, mutate))]
 use mutagen::mutate;
-use units::parse;
+use units::parse::{self, PrefixedHexError, UnprefixedHexError};
 
 #[cfg(doc)]
 use crate::absolute;
 use crate::consensus::encode::{self, Decodable, Encodable};
-use crate::error::{ContainsPrefixError, MissingPrefixError, PrefixedHexError, UnprefixedHexError};
 
 #[rustfmt::skip]                // Keep public re-exports separate.
 #[doc(inline)]
@@ -33,11 +31,12 @@ pub use units::locktime::absolute::{
 ///
 /// ### Note on ordering
 ///
-/// Because locktimes may be height- or time-based, and these metrics are incommensurate, there
-/// is no total ordering on locktimes. We therefore have implemented [`PartialOrd`] but not [`Ord`].
+/// Locktimes may be height- or time-based, and these metrics are incommensurate; there is no total
+/// ordering on locktimes. We therefore have implemented [`PartialOrd`] but not [`Ord`].
 /// For [`crate::Transaction`], which has a locktime field, we implement a total ordering to make
 /// it easy to store transactions in sorted data structures, and use the locktime's 32-bit integer
-/// consensus encoding to order it.
+/// consensus encoding to order it. We also implement [`ordered::ArbitraryOrd`] if the "ordered"
+/// feature is enabled.
 ///
 /// ### Relevant BIPs
 ///
@@ -45,6 +44,7 @@ pub use units::locktime::absolute::{
 /// * [BIP-113 Median time-past as endpoint for lock-time calculations](https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki)
 ///
 /// # Examples
+///
 /// ```
 /// # use unilayer::absolute::{LockTime, LockTime::*};
 /// # let n = LockTime::from_consensus(741521);          // n OP_CHECKLOCKTIMEVERIFY
@@ -61,6 +61,7 @@ pub enum LockTime {
     /// A block height lock time value.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// use unilayer::absolute::LockTime;
     ///
@@ -73,6 +74,7 @@ pub enum LockTime {
     /// A UNIX timestamp lock time value.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// use unilayer::absolute::LockTime;
     ///
@@ -92,26 +94,15 @@ impl LockTime {
     /// The number of bytes that the locktime contributes to the size of a transaction.
     pub const SIZE: usize = 4; // Serialized length of a u32.
 
-    /// Creates a `LockTime` from an prefixed hex string.
+    /// Creates a `LockTime` from a prefixed hex string.
     pub fn from_hex(s: &str) -> Result<Self, PrefixedHexError> {
-        let stripped = if let Some(stripped) = s.strip_prefix("0x") {
-            stripped
-        } else if let Some(stripped) = s.strip_prefix("0X") {
-            stripped
-        } else {
-            return Err(MissingPrefixError::new(s).into());
-        };
-
-        let lock_time = parse::hex_u32(stripped)?;
+        let lock_time = parse::hex_u32_prefixed(s)?;
         Ok(Self::from_consensus(lock_time))
     }
 
     /// Creates a `LockTime` from an unprefixed hex string.
     pub fn from_unprefixed_hex(s: &str) -> Result<Self, UnprefixedHexError> {
-        if s.starts_with("0x") || s.starts_with("0X") {
-            return Err(ContainsPrefixError::new(s).into());
-        }
-        let lock_time = parse::hex_u32(s)?;
+        let lock_time = parse::hex_u32_unprefixed(s)?;
         Ok(Self::from_consensus(lock_time))
     }
 
@@ -141,6 +132,7 @@ impl LockTime {
     /// See [`LOCK_TIME_THRESHOLD`] for definition of a valid height value.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// # use unilayer::absolute::LockTime;
     /// assert!(LockTime::from_height(741521).is_ok());
@@ -157,6 +149,7 @@ impl LockTime {
     /// See [`LOCK_TIME_THRESHOLD`] for definition of a valid time value.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// # use unilayer::absolute::LockTime;
     /// assert!(LockTime::from_time(1653195600).is_ok());
@@ -196,6 +189,7 @@ impl LockTime {
     /// `height`/`time` is valid.
     ///
     /// # Examples
+    ///
     /// ```no_run
     /// # use unilayer::absolute::{LockTime, Height, Time};
     /// // Can be implemented if block chain data is available.

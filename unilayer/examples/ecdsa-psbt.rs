@@ -116,11 +116,11 @@ impl ColdStorage {
         // Hardened children require secret data to derive.
 
         let path = "84h/0h/0h".into_derivation_path()?;
-        let account_0_xpriv = master_xpriv.derive_priv(secp, &path)?;
+        let account_0_xpriv = master_xpriv.derive_priv(secp, &path);
         let account_0_xpub = Xpub::from_priv(secp, &account_0_xpriv);
 
         let path = INPUT_UTXO_DERIVATION_PATH.into_derivation_path()?;
-        let input_xpriv = master_xpriv.derive_priv(secp, &path)?;
+        let input_xpriv = master_xpriv.derive_priv(secp, &path);
         let input_xpub = Xpub::from_priv(secp, &input_xpriv);
 
         let wallet = ColdStorage { master_xpriv, master_xpub };
@@ -171,7 +171,7 @@ impl WatchOnly {
         WatchOnly { account_0_xpub, input_xpub, master_fingerprint }
     }
 
-    /// Creates the PSBT, in BIP174 parlance this is the 'Creater'.
+    /// Creates the PSBT, in BIP174 parlance this is the 'Creator'.
     fn create_psbt<C: Verification>(&self, secp: &Secp256k1<C>) -> Result<Psbt> {
         let to_address = Address::from_str(RECEIVE_ADDRESS)?.require_network(Network::Regtest)?;
         let to_amount = Amount::from_str(OUTPUT_AMOUNT_ULR)?;
@@ -235,7 +235,7 @@ impl WatchOnly {
 
         let sigs: Vec<_> = psbt.inputs[0].partial_sigs.values().collect();
         let mut script_witness: Witness = Witness::new();
-        script_witness.push(&sigs[0].to_vec());
+        script_witness.push(sigs[0].serialize());
         script_witness.push(self.input_xpub.to_pub().to_bytes());
 
         psbt.inputs[0].final_script_witness = Some(script_witness);
